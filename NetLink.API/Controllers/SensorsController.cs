@@ -19,7 +19,6 @@ namespace NetLink.API.Controllers
     {
         private readonly ISensorService _sensorService;
 
-
         public SensorsController(ISensorService sensorService)
         {
             _sensorService = sensorService;
@@ -34,7 +33,7 @@ namespace NetLink.API.Controllers
 
         //GET: api/Sensors/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<SensorDTO>> GetSensor(Guid id)
+        public async Task<ActionResult<SensorDTO>> GetSensorAsync(Guid id)
         {
             try
             {

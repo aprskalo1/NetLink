@@ -1,6 +1,6 @@
 ﻿namespace NetLink.API.Exceptions
 {
-    public class NotFoundException : Exception
+    internal class NotFoundException : Exception
     {
         public NotFoundException()
         {
@@ -8,6 +8,11 @@
 
         public NotFoundException(string message) : base(message)
         {
+        }
+
+        public override string ToString()
+        {
+            return $"NotFoundException: {Message}";
         }
     }
 }

@@ -20,6 +20,8 @@ builder.Services.AddDbContext<NetLinkDbContext>(options =>
 });
 
 builder.Services.AddScoped<ISensorService, SensorService>();
+builder.Services.AddScoped<IDevTokenService, DevTokenService>();
+builder.Services.AddScoped<IEndUserService, EndUserService>();
 
 var app = builder.Build();
 

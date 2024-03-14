@@ -10,6 +10,12 @@ namespace NetLink.API.Mapping
         {
             CreateMap<Sensor, SensorDTO>();
             CreateMap<SensorDTO, Sensor>();
+
+            CreateMap<Developer, DeveloperDTO>();
+            CreateMap<DeveloperDTO, Developer>();
+
+            CreateMap<EndUser, EndUserDTO>();
+            CreateMap<EndUserDTO, EndUser>();
         }
     }
 }
