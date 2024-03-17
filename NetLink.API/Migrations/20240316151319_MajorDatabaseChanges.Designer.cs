@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetLink.API.Data;
 
@@ -11,9 +12,11 @@ using NetLink.API.Data;
 namespace NetLink.API.Migrations
 {
     [DbContext(typeof(NetLinkDbContext))]
-    partial class NetLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240316151319_MajorDatabaseChanges")]
+    partial class MajorDatabaseChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,6 +35,7 @@ namespace NetLink.API.Migrations
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -55,6 +59,7 @@ namespace NetLink.API.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("DeveloperId")
@@ -82,6 +87,7 @@ namespace NetLink.API.Migrations
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -99,6 +105,7 @@ namespace NetLink.API.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("EndUserId")
@@ -123,6 +130,7 @@ namespace NetLink.API.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("EndUserId")
@@ -140,28 +148,6 @@ namespace NetLink.API.Migrations
                     b.ToTable("EndUserSensorGroups");
                 });
 
-            modelBuilder.Entity("NetLink.API.Models.RecordedValue", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("RecordedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("SensorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SensorId");
-
-                    b.ToTable("RecordedValues");
-                });
-
             modelBuilder.Entity("NetLink.API.Models.Sensor", b =>
                 {
                     b.Property<Guid>("Id")
@@ -169,6 +155,7 @@ namespace NetLink.API.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DeviceName")
@@ -186,6 +173,7 @@ namespace NetLink.API.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("GroupName")
@@ -252,17 +240,6 @@ namespace NetLink.API.Migrations
                     b.Navigation("EndUser");
 
                     b.Navigation("SensorGroup");
-                });
-
-            modelBuilder.Entity("NetLink.API.Models.RecordedValue", b =>
-                {
-                    b.HasOne("NetLink.API.Models.Sensor", "Sensor")
-                        .WithMany()
-                        .HasForeignKey("SensorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Sensor");
                 });
 
             modelBuilder.Entity("NetLink.API.Models.SensorGroup", b =>

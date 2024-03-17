@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NetLink.API.Models
 {
@@ -13,7 +15,10 @@ namespace NetLink.API.Models
         [Required]
         public string? EndUserId { get; set; }
 
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
         public Developer? Developer { get; set; }
+
         public EndUser? EndUser { get; set; }
     }
 }

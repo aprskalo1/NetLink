@@ -33,15 +33,15 @@ namespace NetLink.API.Controllers
 
         //GET: api/Sensors/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<SensorDTO>> GetSensorAsync(Guid id)
+        public async Task<ActionResult<SensorDTO>> GetSensorAsync(Guid id, string endUserId)
         {
             try
             {
-                return Ok(await _sensorService.GetSensorByIdAsync(id));
+                return Ok(await _sensorService.GetSensorByIdAsync(id, endUserId));
             }
             catch (NotFoundException)
             {
-                return NotFound();
+                throw new NotFoundException("Sensor not found.");
             }
         }
 
@@ -78,13 +78,13 @@ namespace NetLink.API.Controllers
 
         // POST: api/Sensors
         [HttpPost]
-        public async Task<ActionResult> AddSensorAsync(SensorDTO sensorDTO)
+        public async Task<ActionResult> AddSensorAsync(SensorDTO sensorDTO, string endUserId)
         {
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var sensorId = await _sensorService.AddSensorAsync(sensorDTO);
+            var sensor = await _sensorService.AddSensorAsync(sensorDTO, endUserId);
 
-            return Ok(sensorId);
+            return Ok(sensor);
         }
 
         // DELETE: api/Sensors/5

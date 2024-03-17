@@ -6,8 +6,5 @@ namespace NetLink.API.DTOs
     {
         [Required]
         public string? DeviceName { get; set; }
-
-        [Required]
-        public string? RecordedValue { get; set; }
     }
 }

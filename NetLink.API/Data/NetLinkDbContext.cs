@@ -16,6 +16,7 @@ namespace NetLink.API.Data
         public DbSet<SensorGroup> SensorGroups { get; set; }
         public DbSet<EndUserSensor> EndUserSensors { get; set; }
         public DbSet<EndUserSensorGroup> EndUserSensorGroups { get; set; }
+        public DbSet<RecordedValue> RecordedValues { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

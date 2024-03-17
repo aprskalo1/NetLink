@@ -16,6 +16,9 @@ namespace NetLink.API.Mapping
 
             CreateMap<EndUser, EndUserDTO>();
             CreateMap<EndUserDTO, EndUser>();
+
+            CreateMap<RecordedValue, RecordedValueDTO>();
+            CreateMap<RecordedValueDTO, RecordedValue>();
         }
     }
 }

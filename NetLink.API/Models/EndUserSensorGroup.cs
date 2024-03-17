@@ -1,4 +1,6 @@
-﻿namespace NetLink.API.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace NetLink.API.Models
 {
     public class EndUserSensorGroup
     {
@@ -7,7 +9,10 @@
 
         public EndUser? EndUser { get; set; }
 
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
         public Guid SensorGroupId { get; set; }
+
         public SensorGroup? SensorGroup { get; set; }
     }
 }
