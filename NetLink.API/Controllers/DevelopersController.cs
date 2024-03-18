@@ -80,10 +80,17 @@ namespace NetLink.API.Controllers
         [HttpPost]
         public async Task<ActionResult> AddDeveloperAsync(DeveloperDTO developerDTO)
         {
-            if (!ModelState.IsValid) 
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             var developerId = await _tokenService.AddTokenAsync(developerDTO);
             return Ok(developerId);
+        }
+
+        [HttpGet("checkIfTokenExists")]
+        public async Task<IActionResult> CheckTokenExistsAsync(string token)
+        {
+            var devToken = await _tokenService.CheckIfTokenExistsAsync(token);
+            return devToken ? Ok(new { exists = devToken }) : NotFound(new { exists = devToken });
         }
 
         //// DELETE: api/Developers/5
