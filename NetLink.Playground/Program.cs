@@ -4,7 +4,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDevTokenAuthentication(builder.Configuration["NetLink:DevToken"]!);
+
+//netlink builder services
+builder.Services
+    .AuthenticateDevToken(builder.Configuration["NetLink:DevToken"]!)
+    .AddEndUsers();
 
 var app = builder.Build();
 

@@ -1,8 +1,15 @@
 ﻿namespace NetLink.Session
 {
-    internal class DeveloperSessionManager
+    internal interface IDeveloperSessionManager
     {
-        private string? _devToken;
+        void AddDevTokenAuthentication(string devToken);
+    }
+
+    internal class DeveloperSessionManager : IDeveloperSessionManager
+    {
+        private string? _devToken; //consider using session for this later if it is a good practice to use it
+
+        public string? DevToken { get => _devToken; }
 
         public void AddDevTokenAuthentication(string devToken)
         {
@@ -25,7 +32,7 @@
                         throw new Exception("DevToken is invalid or your account is deactivated, please check DevToken in your configuration file or account status.");
                     }
                 }
-                catch (Exception ex)
+                catch (HttpRequestException ex)
                 {
                     throw new Exception("An error occurred while validating DevToken. Please check your network connection and try again.", ex);
                 }

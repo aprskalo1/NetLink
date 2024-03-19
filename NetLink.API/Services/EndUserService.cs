@@ -11,7 +11,7 @@ namespace NetLink.API.Services
     public interface IEndUserService
     {
         Task<string> AddEndUserAsync(EndUserDTO endUserDTO, string devToken);
-        Task CheckIfEndUserExistsAsync(string endUserId);
+        Task<bool> CheckIfEndUserExistsAsync(string endUserId);
         Task<EndUserDTO> GetUserByIdAsync(string endUserId);
     }
 
@@ -29,7 +29,9 @@ namespace NetLink.API.Services
         public async Task<string> AddEndUserAsync(EndUserDTO endUserDTO, string devToken)
         {
             var developerId = await GetDeveloperFromTokenAsync(devToken);
-            await CheckIfEndUserDoesntExistsAsync(endUserDTO.Id!);
+            var endUserExists = await CheckIfEndUserExistsAsync(endUserDTO.Id!);
+            if (endUserExists)
+                throw new EndUserException("EndUser already exists, please use another account.");
 
             var endUser = _mapper.Map<EndUser>(endUserDTO);
             _dbContext.EndUsers.Add(endUser);
@@ -64,18 +66,10 @@ namespace NetLink.API.Services
             return developer.Id;
         }
 
-        private async Task CheckIfEndUserDoesntExistsAsync(string endUserId)
+        public async Task<bool> CheckIfEndUserExistsAsync(string endUserId)
         {
             var existingEndUser = await _dbContext.EndUsers.FirstOrDefaultAsync(e => e.Id == endUserId);
-            if (existingEndUser != null)
-                throw new EndUserException("EndUser already exists, please use another account.");
-        }
-
-        public async Task CheckIfEndUserExistsAsync(string endUserId)
-        {
-            var existingEndUser = await _dbContext.EndUsers.FirstOrDefaultAsync(e => e.Id == endUserId);
-            if (existingEndUser == null)
-                throw new EndUserException("EndUser doesn't exist. Please verify your DevToken in configuration file or add a new EndUser.");
+            return existingEndUser != null;
         }
     }
 }

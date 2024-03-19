@@ -86,7 +86,7 @@ namespace NetLink.API.Controllers
             return Ok(developerId);
         }
 
-        [HttpGet("checkIfTokenExists")]
+        [HttpGet("CheckIfTokenExists")]
         public async Task<IActionResult> CheckTokenExistsAsync(string token)
         {
             var devToken = await _tokenService.CheckIfTokenExistsAsync(token);

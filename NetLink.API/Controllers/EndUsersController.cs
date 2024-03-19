@@ -86,6 +86,14 @@ namespace NetLink.API.Controllers
             return Ok(endUserId);
         }
 
+        [HttpGet("CheckIfEndUserExists")]
+        public async Task<IActionResult> CheckIfUserExistsAsync(string endUserId)
+        {
+            var endUserExists = await _endUserService.CheckIfEndUserExistsAsync(endUserId); //check if it is active
+            return endUserExists ? Ok(new { exists = endUserExists }) : NotFound(new { exists = endUserExists });
+        }   
+
+
         //// DELETE: api/EndUsers/5
         //[HttpDelete("{id}")]
         //public async Task<IActionResult> DeleteEndUser(string id)

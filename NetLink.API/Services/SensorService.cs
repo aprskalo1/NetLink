@@ -76,7 +76,7 @@ namespace NetLink.API.Services
             return _mapper.Map<SensorDTO>(sensor);
         }
 
-        private async Task CheckIfSensorForUserDoesntExistAsync(string sensorName, string endUserId)
+        private async Task CheckIfSensorForUserDoesntExistAsync(string sensorName, string endUserId) //ovo maknut, ne treba
         {
             var existingSensor = await _dbContext.EndUserSensors
                 .Include(e => e.Sensor)
