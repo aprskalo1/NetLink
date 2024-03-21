@@ -1,3 +1,4 @@
+using NetLink.Services;
 using NetLink.Session;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,8 +8,9 @@ builder.Services.AddControllersWithViews();
 
 //netlink builder services
 builder.Services
-    .AuthenticateDevToken(builder.Configuration["NetLink:DevToken"]!)
-    .AddEndUsers();
+    .AuthenticateWithDevToken(builder.Configuration["NetLink:DevToken"]!)
+    .AddEndUsers()
+    .AddSensorServices();
 
 var app = builder.Build();
 

@@ -11,7 +11,7 @@ namespace NetLink.API.Services
     public interface ISensorService
     {
         Task<SensorDTO> AddSensorAsync(SensorDTO sensorDTO, string endUserId);
-        Task<SensorDTO> GetSensorByIdAsync(Guid id, string endUserId);
+        Task<SensorDTO> GetSensorByNameAsync(string deviceName, string endUserId);
         Task<RecordedValueDTO> AddRecordedValueAsync(RecordedValueDTO recordedValueDTO, string sensorName, string endUserId);
     }
 
@@ -60,15 +60,15 @@ namespace NetLink.API.Services
             return _mapper.Map<RecordedValueDTO>(recordedValue);
         }
 
-        public async Task<SensorDTO> GetSensorByIdAsync(Guid id, string endUserId)
+        public async Task<SensorDTO> GetSensorByNameAsync(string deviceName, string endUserId)
         {
             var endUser = await _endUserService.GetUserByIdAsync(endUserId);
 
             var sensor = await _dbContext.EndUserSensors
                 .Include(e => e.Sensor)
-                .Where(e => e.EndUserId == endUserId)
+                .Where(e => e.EndUserId == endUserId && e.Sensor!.DeviceName == deviceName)
                 .Select(e => e.Sensor)
-                .FirstOrDefaultAsync(s => s!.Id == id);
+                .FirstOrDefaultAsync();
 
             if (sensor == null)
                 throw new NotFoundException("Sensor not found.");

@@ -4,7 +4,7 @@ namespace NetLink.Session
 {
     public static class SessionManagerExtensions
     {
-        public static IServiceCollection AuthenticateDevToken(this IServiceCollection services, string devToken)
+        public static IServiceCollection AuthenticateWithDevToken(this IServiceCollection services, string devToken)
         {
             services.AddSingleton<IDeveloperSessionManager, DeveloperSessionManager>(provider =>
             {

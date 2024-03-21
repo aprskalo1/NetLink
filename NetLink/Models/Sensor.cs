@@ -14,5 +14,7 @@ namespace NetLink.Models
         }
 
         public string? DeviceName { get; set; }
+
+        
     }
 }
