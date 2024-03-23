@@ -6,12 +6,10 @@ namespace NetLink.Session
     {
         public static IServiceCollection AuthenticateWithDevToken(this IServiceCollection services, string devToken)
         {
-            services.AddSingleton<IDeveloperSessionManager, DeveloperSessionManager>(provider =>
-            {
-                var developerSessionManager = new DeveloperSessionManager();
-                developerSessionManager.AddDevTokenAuthentication(devToken);
-                return developerSessionManager;
-            });
+            var developerSessionManager = new DeveloperSessionManager();
+
+            developerSessionManager.AddDevTokenAuthentication(devToken);
+            services.AddSingleton(developerSessionManager);
 
             return services;
         }
