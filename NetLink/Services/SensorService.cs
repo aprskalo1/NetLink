@@ -40,7 +40,7 @@ namespace NetLink.Services
                     response.EnsureSuccessStatusCode();
 
                     var responseBody = response.Content.ReadAsStringAsync().Result;
-                    Sensor apiSensor = JsonConvert.DeserializeObject<Sensor>(responseBody)!;
+                    //Sensor apiSensor = JsonConvert.DeserializeObject<Sensor>(responseBody)!;
 
                     return sensor;
                 }

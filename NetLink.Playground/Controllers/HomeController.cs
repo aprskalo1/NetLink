@@ -13,12 +13,14 @@ namespace NetLink.Playground.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IEndUserSessionManager _endUserSessionManager;
         private readonly ISensorService _sensorService;
+        private readonly IRecordedValueService _recordedValueService;
 
-        public HomeController(ILogger<HomeController> logger, IEndUserSessionManager endUserSessionManager, ISensorService sensorService)
+        public HomeController(ILogger<HomeController> logger, IEndUserSessionManager endUserSessionManager, ISensorService sensorService, IRecordedValueService recordedValueService)
         {
             _logger = logger;
             _endUserSessionManager = endUserSessionManager;
             _sensorService = sensorService;
+            _recordedValueService = recordedValueService;
         }
 
         public IActionResult Index()
@@ -31,11 +33,13 @@ namespace NetLink.Playground.Controllers
 
         public IActionResult Privacy()
         {
-            Sensor sensor1 = new Sensor("sleepingroom4_sensor");
-            _sensorService.AddSensor(sensor1);
+            Sensor sensor1 = new Sensor("sleepingroom9_sensor");
+            //_sensorService.AddSensor(sensor1);
 
-            var returnedSensor = _sensorService.GetSensorByName("sleepingroom_sensor");
-            Console.WriteLine(returnedSensor.DeviceName);
+            sensor1.RecordValue("nova vrijednostttt", _recordedValueService);
+
+            //var returnedSensor = _sensorService.GetSensorByName("sleepingroom_sensor");
+            //Console.WriteLine(returnedSensor.DeviceName);
 
             return View();
         }

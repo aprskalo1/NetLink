@@ -16,12 +16,10 @@ namespace NetLink.API.Controllers
     [ApiController]
     public class RecordedValuesController : ControllerBase
     {
-        private readonly NetLinkDbContext _context;
         private readonly ISensorService _sensorService;
 
         public RecordedValuesController(NetLinkDbContext context, ISensorService sensorService)
         {
-            _context = context;
             _sensorService = sensorService;
         }
 
@@ -79,7 +77,7 @@ namespace NetLink.API.Controllers
 
         // POST: api/RecordedValues
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        [HttpPost("AddRecordedValue")]
         public async Task<ActionResult<RecordedValueDTO>> PostRecordedValue(RecordedValueDTO recordedValueDTO, string sensorName, string endUserId)
         {
             if (!ModelState.IsValid)
@@ -87,7 +85,6 @@ namespace NetLink.API.Controllers
             var recordedValue = await _sensorService.AddRecordedValueAsync(recordedValueDTO, sensorName, endUserId);
 
             return recordedValue;
-            
         }
 
         // DELETE: api/RecordedValues/5
