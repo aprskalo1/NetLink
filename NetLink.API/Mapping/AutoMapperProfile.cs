@@ -2,23 +2,22 @@
 using NetLink.API.DTOs;
 using NetLink.API.Models;
 
-namespace NetLink.API.Mapping
+namespace NetLink.API.Mapping;
+
+public class AutoMapperProfile : Profile
 {
-    public class AutoMapperProfile : Profile
+    public AutoMapperProfile()
     {
-        public AutoMapperProfile()
-        {
-            CreateMap<Sensor, SensorDTO>();
-            CreateMap<SensorDTO, Sensor>();
+        CreateMap<Sensor, SensorDto>();
+        CreateMap<SensorDto, Sensor>();
 
-            CreateMap<Developer, DeveloperDTO>();
-            CreateMap<DeveloperDTO, Developer>();
+        CreateMap<Developer, DeveloperDto>();
+        CreateMap<DeveloperDto, Developer>();
 
-            CreateMap<EndUser, EndUserDTO>();
-            CreateMap<EndUserDTO, EndUser>();
+        CreateMap<EndUser, EndUserDto>();
+        CreateMap<EndUserDto, EndUser>();
 
-            CreateMap<RecordedValue, RecordedValueDTO>();
-            CreateMap<RecordedValueDTO, RecordedValue>();
-        }
+        CreateMap<RecordedValue, RecordedValueDto>();
+        CreateMap<RecordedValueDto, RecordedValue>();
     }
 }

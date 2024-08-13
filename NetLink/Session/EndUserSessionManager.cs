@@ -1,52 +1,51 @@
 ﻿using NetLink.Models;
 
-namespace NetLink.Session
+namespace NetLink.Session;
+
+public interface IEndUserSessionManager
 {
-    public interface IEndUserSessionManager
+    void LogEndUserIn(EndUser endUser);
+    string GetLoggedEndUserId();
+}
+
+internal class EndUserSessionManager : IEndUserSessionManager
+{
+    private EndUser? _endUser;
+
+    public void LogEndUserIn(EndUser endUser)
     {
-        void LogEndUserIn(EndUser endUser);
-        string GetLoggedEndUserId();
+        CheckEndUser(endUser.Id!);
+        _endUser = endUser;
     }
 
-    internal class EndUserSessionManager : IEndUserSessionManager
+    public string GetLoggedEndUserId()
     {
-        private EndUser? _endUser;
-
-        public void LogEndUserIn(EndUser endUser)
+        if (_endUser == null)
         {
-            CheckEndUser(endUser.Id!);
-            _endUser = endUser;
+            throw new Exception("EndUser is not logged in. Please log in first.");
         }
 
-        public string GetLoggedEndUserId()
+        return _endUser.Id!;
+    }
+
+    internal void CheckEndUser(string endUserId)
+    {
+        string tokenCheckEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.EndUserValidationUrl, endUserId)}";
+
+        using (var httpClient = new HttpClient())
         {
-            if (_endUser == null)
+            try
             {
-                throw new Exception("EndUser is not logged in. Please log in first.");
+                var response = httpClient.GetAsync(tokenCheckEndpoint).Result;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception("EndUserId invalid, please use another account.");
+                }
             }
-
-            return _endUser.Id!;
-        }
-
-        internal void CheckEndUser(string endUserId)
-        {
-            string tokenCheckEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.EndUserValidationUrl, endUserId)}";
-
-            using (var httpClient = new HttpClient())
+            catch (HttpRequestException ex)
             {
-                try
-                {
-                    var response = httpClient.GetAsync(tokenCheckEndpoint).Result;
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        throw new Exception("EndUserId invalid, please use another account.");
-                    }
-                }
-                catch (HttpRequestException ex)
-                {
-                    throw new Exception("An error occurred while validating EndUserId. Please check your network connection and try again.", ex);
-                }
+                throw new Exception("An error occurred while validating EndUserId. Please check your network connection and try again.", ex);
             }
         }
     }

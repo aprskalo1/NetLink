@@ -5,104 +5,102 @@ using NetLink.API.DTOs;
 using NetLink.API.Exceptions;
 using NetLink.API.Models;
 
-namespace NetLink.API.Services
-{
+namespace NetLink.API.Services;
 
-    public interface ISensorService
+public interface ISensorService
+{
+    Task<SensorDto> AddSensorAsync(SensorDto sensorDTO, string endUserId);
+    Task<SensorDto> GetSensorByNameAsync(string deviceName, string endUserId);
+    Task<RecordedValueDto> AddRecordedValueAsync(RecordedValueDto recordedValueDTO, string sensorName, string endUserId);
+}
+
+public class SensorService : ISensorService
+{
+    private readonly IMapper _mapper;
+    private readonly NetLinkDbContext _dbContext;
+    private readonly IEndUserService _endUserService;
+
+    public SensorService(IMapper mapper, NetLinkDbContext dbContext, IEndUserService endUserService)
     {
-        Task<SensorDTO> AddSensorAsync(SensorDTO sensorDTO, string endUserId);
-        Task<SensorDTO> GetSensorByNameAsync(string deviceName, string endUserId);
-        Task<RecordedValueDTO> AddRecordedValueAsync(RecordedValueDTO recordedValueDTO, string sensorName, string endUserId);
+        _mapper = mapper;
+        _dbContext = dbContext;
+        _endUserService = endUserService;
     }
 
-    public class SensorService : ISensorService
+    public async Task<SensorDto> AddSensorAsync(SensorDto sensorDTO, string endUserId)
     {
-        private readonly IMapper _mapper;
-        private readonly NetLinkDbContext _dbContext;
-        private readonly IEndUserService _endUserService;
+        await _endUserService.CheckIfEndUserExistsAsync(endUserId);
+        await CheckIfSensorForUserDoesntExistAsync(sensorDTO.DeviceName!, endUserId);
 
-        public SensorService(IMapper mapper, NetLinkDbContext dbContext, IEndUserService endUserService)
+        var sensor = _mapper.Map<Sensor>(sensorDTO);
+        _dbContext.Sensors.Add(sensor);
+
+        var endUserSensor = new EndUserSensor
         {
-            _mapper = mapper;
-            _dbContext = dbContext;
-            _endUserService = endUserService;
-        }
+            EndUserId = endUserId,
+            SensorId = sensor.Id
+        };
+        _dbContext.EndUserSensors.Add(endUserSensor);
 
-        public async Task<SensorDTO> AddSensorAsync(SensorDTO sensorDTO, string endUserId)
-        {
-            await _endUserService.CheckIfEndUserExistsAsync(endUserId);
-            await CheckIfSensorForUserDoesntExistAsync(sensorDTO.DeviceName!, endUserId);
+        await _dbContext.SaveChangesAsync();
+        return sensorDTO;
+    }
 
-            var sensor = _mapper.Map<Sensor>(sensorDTO);
-            _dbContext.Sensors.Add(sensor);
+    public async Task<RecordedValueDto> AddRecordedValueAsync(RecordedValueDto recordedValueDTO, string sensorName, string endUserId)
+    {
+        var sensorId = await FindSensorByNameAsync(sensorName, endUserId);
 
-            var endUserSensor = new EndUserSensor
-            {
-                EndUserId = endUserId,
-                SensorId = sensor.Id
-            };
-            _dbContext.EndUserSensors.Add(endUserSensor);
+        var recordedValue = _mapper.Map<RecordedValue>(recordedValueDTO);
+        recordedValue.SensorId = sensorId;
 
-            await _dbContext.SaveChangesAsync();
-            return sensorDTO;
-        }
+        _dbContext.RecordedValues.Add(recordedValue);
+        await _dbContext.SaveChangesAsync();
 
-        public async Task<RecordedValueDTO> AddRecordedValueAsync(RecordedValueDTO recordedValueDTO, string sensorName, string endUserId)
-        {
-            var sensorId = await FindSensorByNameAsync(sensorName, endUserId);
+        return _mapper.Map<RecordedValueDto>(recordedValue);
+    }
 
-            var recordedValue = _mapper.Map<RecordedValue>(recordedValueDTO);
-            recordedValue.SensorId = sensorId;
+    public async Task<SensorDto> GetSensorByNameAsync(string deviceName, string endUserId)
+    {
+        var endUser = await _endUserService.GetUserByIdAsync(endUserId);
 
-            _dbContext.RecordedValues.Add(recordedValue);
-            await _dbContext.SaveChangesAsync();
+        var sensor = await _dbContext.EndUserSensors
+            .Include(e => e.Sensor)
+            .Where(e => e.EndUserId == endUserId && e.Sensor!.DeviceName == deviceName)
+            .Select(e => e.Sensor)
+            .FirstOrDefaultAsync();
 
-            return _mapper.Map<RecordedValueDTO>(recordedValue);
-        }
+        if (sensor == null)
+            throw new NotFoundException("Sensor not found.");
 
-        public async Task<SensorDTO> GetSensorByNameAsync(string deviceName, string endUserId)
-        {
-            var endUser = await _endUserService.GetUserByIdAsync(endUserId);
+        return _mapper.Map<SensorDto>(sensor);
+    }
 
-            var sensor = await _dbContext.EndUserSensors
-                .Include(e => e.Sensor)
-                .Where(e => e.EndUserId == endUserId && e.Sensor!.DeviceName == deviceName)
-                .Select(e => e.Sensor)
-                .FirstOrDefaultAsync();
+    private async Task CheckIfSensorForUserDoesntExistAsync(string sensorName, string endUserId) //ovo maknut, ne treba
+    {
+        var existingSensor = await _dbContext.EndUserSensors
+            .Include(e => e.Sensor)
+            .FirstOrDefaultAsync(e => e.Sensor!.DeviceName == sensorName && e.EndUserId == endUserId);
+        if (existingSensor != null)
+            throw new SensorException("Device with this name already exists or does not belong to current end user.");
+    }
 
-            if (sensor == null)
-                throw new NotFoundException("Sensor not found.");
+    private async Task CheckIfSensorForUserExistsAsync(string sensorName, string endUserId)
+    {
+        var existingSensor = await _dbContext.EndUserSensors
+            .Include(e => e.Sensor)
+            .FirstOrDefaultAsync(e => e.Sensor!.DeviceName == sensorName && e.EndUserId == endUserId);
+        if (existingSensor == null)
+            throw new SensorException("Device with this name does not exist or does not belong to current end user.");
+    }
 
-            return _mapper.Map<SensorDTO>(sensor);
-        }
+    private async Task<Guid> FindSensorByNameAsync(string sensorName, string endUserId)
+    {
+        await CheckIfSensorForUserExistsAsync(sensorName, endUserId);
 
-        private async Task CheckIfSensorForUserDoesntExistAsync(string sensorName, string endUserId) //ovo maknut, ne treba
-        {
-            var existingSensor = await _dbContext.EndUserSensors
-                .Include(e => e.Sensor)
-                .FirstOrDefaultAsync(e => e.Sensor!.DeviceName == sensorName && e.EndUserId == endUserId);
-            if (existingSensor != null)
-                throw new SensorException("Device with this name already exists or does not belong to current end user.");
-        }
+        var existingSensor = await _dbContext.Sensors.FirstOrDefaultAsync(s => s.DeviceName == sensorName);
+        if (existingSensor == null)
+            throw new SensorException("Device with this name does not exist, please check your device name.");
 
-        private async Task CheckIfSensorForUserExistsAsync(string sensorName, string endUserId)
-        {
-            var existingSensor = await _dbContext.EndUserSensors
-                .Include(e => e.Sensor)
-                .FirstOrDefaultAsync(e => e.Sensor!.DeviceName == sensorName && e.EndUserId == endUserId);
-            if (existingSensor == null)
-                throw new SensorException("Device with this name does not exist or does not belong to current end user.");
-        }
-
-        private async Task<Guid> FindSensorByNameAsync(string sensorName, string endUserId)
-        {
-            await CheckIfSensorForUserExistsAsync(sensorName, endUserId);
-
-            var existingSensor = await _dbContext.Sensors.FirstOrDefaultAsync(s => s.DeviceName == sensorName);
-            if (existingSensor == null)
-                throw new SensorException("Device with this name does not exist, please check your device name.");
-
-            return existingSensor.Id;
-        }
+        return existingSensor.Id;
     }
 }

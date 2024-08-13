@@ -7,45 +7,44 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NetLink.Session;
 
-namespace NetLink.Services
+namespace NetLink.Services;
+
+public interface IRecordedValueService
 {
-    public interface IRecordedValueService
+    public RecordedValue RecordValue(string deviceName, RecordedValue recordedValue);
+}
+
+internal class RecordedValueService : IRecordedValueService
+{
+    private readonly IEndUserSessionManager _endUserSessionManager;
+
+    public RecordedValueService(IEndUserSessionManager endUserSessionManager)
     {
-        public RecordedValue RecordValue(string deviceName, RecordedValue recordedValue);
+        _endUserSessionManager = endUserSessionManager;
     }
 
-    internal class RecordedValueService : IRecordedValueService
+    public RecordedValue RecordValue(string deviceName, RecordedValue recordedValue)
     {
-        private readonly IEndUserSessionManager _endUserSessionManager;
+        var endUserId = _endUserSessionManager.GetLoggedEndUserId();
+        string recordValueEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.AddRecordedValueUrl, deviceName, endUserId)}";
 
-        public RecordedValueService(IEndUserSessionManager endUserSessionManager)
+        using (var http = new HttpClient())
         {
-            _endUserSessionManager = endUserSessionManager;
-        }
-
-        public RecordedValue RecordValue(string deviceName, RecordedValue recordedValue)
-        {
-            var endUserId = _endUserSessionManager.GetLoggedEndUserId();
-            string recordValueEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.AddRecordedValueUrl, deviceName, endUserId)}";
-
-            using (var http = new HttpClient())
+            try
             {
-                try
-                {
-                    var json = JsonConvert.SerializeObject(recordedValue);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var json = JsonConvert.SerializeObject(recordedValue);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                    HttpResponseMessage response = http.PostAsync(recordValueEndpoint, content).Result;
-                    response.EnsureSuccessStatusCode();
+                HttpResponseMessage response = http.PostAsync(recordValueEndpoint, content).Result;
+                response.EnsureSuccessStatusCode();
 
-                    var responseBody = response.Content.ReadAsStringAsync().Result;
+                var responseBody = response.Content.ReadAsStringAsync().Result;
 
-                    return recordedValue;
-                }
-                catch (HttpRequestException ex)
-                {
-                    throw new Exception("An error occurred while recording the value. Please check your network connection and try again.", ex);
-                }
+                return recordedValue;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception("An error occurred while recording the value. Please check your network connection and try again.", ex);
             }
         }
     }

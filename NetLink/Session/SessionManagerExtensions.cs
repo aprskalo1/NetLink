@@ -1,24 +1,23 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace NetLink.Session
+namespace NetLink.Session;
+
+public static class SessionManagerExtensions
 {
-    public static class SessionManagerExtensions
+    public static IServiceCollection AuthenticateWithDevToken(this IServiceCollection services, string devToken)
     {
-        public static IServiceCollection AuthenticateWithDevToken(this IServiceCollection services, string devToken)
-        {
-            var developerSessionManager = new DeveloperSessionManager();
+        var developerSessionManager = new DeveloperSessionManager();
 
-            developerSessionManager.AddDevTokenAuthentication(devToken);
-            services.AddSingleton(developerSessionManager);
+        developerSessionManager.AddDevTokenAuthentication(devToken);
+        services.AddSingleton(developerSessionManager);
 
-            return services;
-        }
+        return services;
+    }
 
-        public static IServiceCollection AddEndUsers(this IServiceCollection services)
-        {
-            services.AddSingleton<IEndUserSessionManager, EndUserSessionManager>();
+    public static IServiceCollection AddEndUsers(this IServiceCollection services)
+    {
+        services.AddSingleton<IEndUserSessionManager, EndUserSessionManager>();
 
-            return services;
-        }
+        return services;
     }
 }
