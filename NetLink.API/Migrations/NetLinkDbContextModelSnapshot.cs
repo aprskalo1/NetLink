@@ -17,7 +17,7 @@ namespace NetLink.API.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.2")
+                .HasAnnotation("ProductVersion", "8.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -171,7 +171,19 @@ namespace NetLink.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DeviceDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeviceLocation")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DeviceName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeviceType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MeasurementUnit")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");

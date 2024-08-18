@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
-using NetLink.API.DTOs;
 using NetLink.API.Models;
+using NetLink.API.Shared;
+using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Mapping;
 
@@ -19,5 +20,8 @@ public class AutoMapperProfile : Profile
 
         CreateMap<RecordedValue, RecordedValueDto>();
         CreateMap<RecordedValueDto, RecordedValue>();
+
+        CreateMap<SensorRes, Sensor>();
+        CreateMap<Sensor, SensorRes>();
     }
 }

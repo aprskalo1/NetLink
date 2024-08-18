@@ -8,17 +8,17 @@ namespace NetLink.API.Models;
 public class Developer
 {
     [Key]
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
 
-    public string? DevToken { get; set; }
+    public string? DevToken { get; init; }
 
-    public string? Username { get; set; }
+    public string? Username { get; init; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; init; } = DateTime.Now;
 
-    public DateTime? DeletedAt { get; set; }
+    public DateTime? DeletedAt { get; init; }
 
-    public bool Active { get; set; } = true;
+    public bool Active { get; init; } = true;
 
-    public ICollection<DeveloperUser>? DeveloperUsers { get; set; }
+    public ICollection<DeveloperUser>? DeveloperUsers { get; init; }
 }

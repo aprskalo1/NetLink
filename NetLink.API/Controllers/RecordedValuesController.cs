@@ -1,28 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NetLink.API.Data;
-using NetLink.API.DTOs;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NetLink.API.Services;
+using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class RecordedValuesController : ControllerBase
+[Authorize]
+public class RecordedValuesController(ISensorOperationsService sensorService) : ControllerBase
 {
-    private readonly ISensorService _sensorService;
-
-    public RecordedValuesController(NetLinkDbContext context, ISensorService sensorService)
-    {
-        _sensorService = sensorService;
-    }
-        
-    [HttpPost("AddRecordedValue")]
-    public async Task<ActionResult<RecordedValueDto>> PostRecordedValue(RecordedValueDto recordedValueDto, string sensorName, string endUserId)
+    [HttpPost("RecordValueBySensorName")]
+    public async Task<ActionResult<RecordedValueDto>> RecordValueBySensorNameAsync(RecordedValueDto recordedValueDto,
+        string sensorName, string endUserId)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        var recordedValue = await _sensorService.AddRecordedValueAsync(recordedValueDto, sensorName, endUserId);
-
-        return recordedValue;
+        return Ok(await sensorService.AddRecordedValueAsync(recordedValueDto, sensorName, endUserId));
     }
 }

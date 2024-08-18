@@ -4,15 +4,15 @@ namespace NetLink.API.Models;
 
 public class EndUserSensor
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
 
-    public string? EndUserId { get; set; }
+    public string? EndUserId { get; init; }
 
-    public EndUser? EndUser { get; set; }
+    public EndUser? EndUser { get; init; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; init; } = DateTime.Now;
 
-    public Guid SensorId { get; set; }
+    public Guid SensorId { get; init; }
 
-    public Sensor? Sensor { get; set; }
+    public Sensor? Sensor { get; init; }
 }

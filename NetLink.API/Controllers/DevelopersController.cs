@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NetLink.API.DTOs;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NetLink.API.Services;
+using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class DevelopersController(IDeveloperService developerService) : ControllerBase
 {
     [HttpPost("AddDeveloper")]
@@ -13,14 +15,19 @@ public class DevelopersController(IDeveloperService developerService) : Controll
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        var developerId = await developerService.AddTokenAsync(developerDto);
-        return Ok(developerId);
+        return Ok(await developerService.AddTokenAsync(developerDto));
     }
 
-    [HttpGet("CheckIfTokenExists")]
-    public async Task<IActionResult> CheckTokenExistsAsync(string token) 
+    [HttpGet("CheckIfDevTokenExists")] 
+    public async Task<IActionResult> CheckIfDevTokenExistsAsync(string token)
     {
-        await developerService.CheckIfTokenExistsAsync(token);
+        await developerService.CheckIfDevTokenExistsAsync(token);
         return Ok();
+    }
+    
+    [HttpGet("GetDeveloperIdFromToken")]
+    public async Task<IActionResult> GetDeveloperFromTokenAsync(string token)
+    {
+        return Ok(await developerService.GetDeveloperIdFromTokenAsync(token));
     }
 }

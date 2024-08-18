@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NetLink.Session;
+using NetLink.Utilities;
 
 namespace NetLink.Services;
 

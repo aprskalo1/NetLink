@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace NetLink.API.DTOs;
+namespace NetLink.API.Shared.DTOs;
 
 public class RecordedValueDto
 {
     [Required] 
-    public string? Value { get; set; }
+    public string? Value { get; init; }
 }

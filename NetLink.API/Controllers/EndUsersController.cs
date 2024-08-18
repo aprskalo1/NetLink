@@ -1,26 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NetLink.API.DTOs;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NetLink.API.Services;
+using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class EndUsersController(IEndUserService endUserService) : ControllerBase
 {
     [HttpPost("AddEndUser")]
     public async Task<ActionResult> AddEndUserAsync(EndUserDto endUserDto, string devToken)
     {
-        if(!ModelState.IsValid)
+        if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        var endUserId = await endUserService.AddEndUserAsync(endUserDto, devToken);
-        return Ok(endUserId);
+        return Ok(await endUserService.AddEndUserAsync(endUserDto, devToken));
     }
 
-    [HttpGet("CheckIfEndUserExists")]
-    public async Task<IActionResult> CheckIfUserExistsAsync(string endUserId)
+    //TODO: maybe not needed as API endpoint
+    [HttpGet("EnsureEndUserStatus")]
+    public async Task<IActionResult> EnsureEndUserExistsAsync(string endUserId)
     {
-        var endUserExists = await endUserService.CheckIfEndUserExistsAsync(endUserId); //check if it is active
-        return endUserExists ? Ok(new { exists = endUserExists }) : NotFound(new { exists = endUserExists });
-    }   
+        await endUserService.EnsureEndUserStatusAsync(endUserId);
+        return Ok();
+    }
 }

@@ -1,4 +1,6 @@
-﻿namespace NetLink.Session;
+﻿using NetLink.Utilities;
+
+namespace NetLink.Session;
 
 internal interface IDeveloperSessionManager
 {

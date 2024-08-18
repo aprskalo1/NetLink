@@ -1,24 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace NetLink.API.Models;
+namespace NetLink.API.Shared.DTOs;
 
-public class Sensor
+public class SensorDto
 {
-    [Key]
-    public Guid Id { get; init; }
-
+    [Required]
     public string? DeviceName { get; init; }
     
+    [Required]
     public string? DeviceType { get; init; }
     
+    [Required]
     public string? MeasurementUnit { get; init; }
     
     public string? DeviceLocation { get; init; }
     
     public string? DeviceDescription { get; init; }
-
-    public DateTime CreatedAt { get; init; } = DateTime.Now;
-
-    public ICollection<EndUserSensor>? EndUserSensors { get; init; }
 }

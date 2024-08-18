@@ -6,13 +6,13 @@ namespace NetLink.API.Models;
 public class RecordedValue
 {
     [Key]
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
 
-    public string? Value { get; set; }
+    public string? Value { get; init; }
 
-    public DateTime RecordedAt { get; set; } = DateTime.Now;
+    public DateTime RecordedAt { get; init; } = DateTime.Now;
 
     public Guid SensorId { get; set; }
 
-    public Sensor? Sensor { get; set; }
+    public Sensor? Sensor { get; init; }
 }

@@ -4,15 +4,15 @@ namespace NetLink.API.Models;
 
 public class SensorGroup
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
 
-    public string? GroupName { get; set; }
+    public string? GroupName { get; init; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; init; } = DateTime.Now;
 
-    public Guid SensorId { get; set; }
+    public Guid SensorId { get; init; }
 
-    public Sensor? Sensor { get; set; }
+    public Sensor? Sensor { get; init; }
 
-    public ICollection<EndUserSensorGroup>? EndUserSensorGroups { get; set; }
+    public ICollection<EndUserSensorGroup>? EndUserSensorGroups { get; init; }
 }

@@ -1,73 +1,59 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using NetLink.API.Data;
-using NetLink.API.DTOs;
 using NetLink.API.Exceptions;
 using NetLink.API.Models;
+using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Services;
 
 public interface IEndUserService
 {
-    Task<string> AddEndUserAsync(EndUserDto endUserDTO, string devToken);
-    Task<bool> CheckIfEndUserExistsAsync(string endUserId);
-    Task<EndUserDto> GetUserByIdAsync(string endUserId);
+    Task<string> AddEndUserAsync(EndUserDto endUserDto, string devToken);
+    Task EnsureEndUserStatusAsync(string endUserId);
 }
 
-public class EndUserService : IEndUserService
+public class EndUserService(IMapper mapper, NetLinkDbContext dbContext, IDeveloperService developerService)
+    : IEndUserService
 {
-    private readonly IMapper _mapper;
-    private readonly NetLinkDbContext _dbContext;
-
-    public EndUserService(IMapper mapper, NetLinkDbContext dbContext)
-    {
-        _mapper = mapper;
-        _dbContext = dbContext;
-    }
-
     public async Task<string> AddEndUserAsync(EndUserDto endUserDto, string devToken)
     {
-        var developerId = await GetDeveloperFromTokenAsync(devToken);
-        var endUserExists = await CheckIfEndUserExistsAsync(endUserDto.Id!);
-        if (endUserExists)
-            throw new EndUserException("EndUser already exists, please use another account.");
+        var developerId = await developerService.GetDeveloperIdFromTokenAsync(devToken);
+        var endUser = mapper.Map<EndUser>(endUserDto);
 
-        var endUser = _mapper.Map<EndUser>(endUserDto);
-        _dbContext.EndUsers.Add(endUser);
+        if (await ValidateEndUserAssociationAsync(endUserDto.Id!, developerId))
+            throw new EndUserException("EndUser already exists, please use another account.");
 
         var developerUser = new DeveloperUser
         {
             DeveloperId = developerId,
             EndUserId = endUser.Id
         };
-        _dbContext.DeveloperUsers.Add(developerUser);
-        await _dbContext.SaveChangesAsync();
+
+        dbContext.EndUsers.Add(endUser);
+        dbContext.DeveloperUsers.Add(developerUser);
+        await dbContext.SaveChangesAsync();
 
         return endUser.Id!;
     }
 
-    public async Task<EndUserDto> GetUserByIdAsync(string endUserId)
+    //TODO: Add devToken or developerId for future use for security reasons
+    public async Task EnsureEndUserStatusAsync(string endUserId)
     {
-        if (endUserId == null)
-            throw new NotFoundException("End user not found.");
+        var endUser = await dbContext.EndUsers
+            .FirstOrDefaultAsync(e => e.Id == endUserId);
 
-        var endUser = await _dbContext.EndUsers.FirstOrDefaultAsync(endUser => endUser.Id == endUserId);
+        if (endUser == null)
+            throw new EndUserException("EndUser does not exist.");
 
-        return _mapper.Map<EndUserDto>(endUser);
+        if (endUser.DeletedAt.HasValue)
+            throw new EndUserException("EndUser account has been deleted.");
+
+        if (!endUser.Active)
+            throw new EndUserException("EndUser account is not active.");
     }
 
-    private async Task<Guid> GetDeveloperFromTokenAsync(string devToken)
-    {
-        var developer = await _dbContext.Developers.FirstOrDefaultAsync(d => d.DevToken == devToken);
-
-        if (developer == null)
-            throw new DeveloperException("Developer with this token does not exist or DevToken is invalid, please check your DevToken in configuration file.");
-        return developer.Id;
-    }
-
-    public async Task<bool> CheckIfEndUserExistsAsync(string endUserId)
-    {
-        var existingEndUser = await _dbContext.EndUsers.FirstOrDefaultAsync(e => e.Id == endUserId);
-        return existingEndUser != null;
-    }
+    private async Task<bool> ValidateEndUserAssociationAsync(string endUserId, Guid developerId) =>
+        await dbContext.DeveloperUsers
+            .AnyAsync(du => du.EndUserId == endUserId && du.DeveloperId == developerId);
 }

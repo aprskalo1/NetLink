@@ -1,4 +1,6 @@
-﻿public static class ApiUrls
+﻿namespace NetLink.Utilities;
+
+public static class ApiUrls
 {
     public const string BaseUrl = "https://localhost:7260/api";
     public const string DevTokenValidationUrl = "/Developers/CheckIfTokenExists?token={0}";
