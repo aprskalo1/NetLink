@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace NetLink.API.Shared;
 
 public class SensorRes

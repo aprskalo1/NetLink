@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace NetLink.API.Models;
+﻿namespace NetLink.API.Models;
 
 public class EndUserSensorGroup
 {

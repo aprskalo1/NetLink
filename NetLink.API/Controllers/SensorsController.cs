@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NetLink.API.Exceptions;
 using NetLink.API.Services;
 using NetLink.API.Shared.DTOs;
 
