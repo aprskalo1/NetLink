@@ -11,7 +11,7 @@ public class AuthController(IJwtTokenService jwtTokenService, IDeveloperService 
     [HttpPost("AuthorizeClient")]
     public async Task<IActionResult> AuthorizeClient(string devToken)
     {
-        await developerService.CheckIfDevTokenExistsAsync(devToken);
+        await developerService.EnsureDevTokenAsync(devToken);
         return Ok(jwtTokenService.GenerateToken());
     }
 }

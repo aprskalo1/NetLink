@@ -6,11 +6,8 @@ public static class SessionManagerExtensions
 {
     public static IServiceCollection AuthenticateWithDevToken(this IServiceCollection services, string devToken)
     {
-        var developerSessionManager = new DeveloperSessionManager();
-
-        developerSessionManager.AddDevTokenAuthentication(devToken);
-        services.AddSingleton(developerSessionManager);
-
+        services.AddSingleton<IDeveloperSessionManager, DeveloperSessionManager>(_ => new DeveloperSessionManager(devToken));
+        
         return services;
     }
 

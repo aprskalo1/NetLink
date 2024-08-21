@@ -25,18 +25,21 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        EndUser user1 = new EndUser("4567-e89b-12d3-a456-426614174003");
-        _endUserSessionManager.LogEndUserIn(user1);
+        // EndUser user1 = new EndUser("4567-e89b-12d3-a456-426614174003");
+        // _endUserSessionManager.LogEndUserIn(user1);
+        
+        Sensor sensor1 = new Sensor("playground_test_sensor");
+        _sensorService.AddSensorAsync(sensor1);
 
         return View();
     }
 
     public IActionResult Privacy()
     {
-        Sensor sensor1 = new Sensor("sleepingroom9_sensor");
-        //_sensorService.AddSensor(sensor1);
+        Sensor sensor1 = new Sensor("playground_test_sensor");
+        _sensorService.AddSensorAsync(sensor1);
 
-        sensor1.RecordValue("nova vrijednostttt", _recordedValueService);
+        //sensor1.RecordValue("nova vrijednostttt", _recordedValueService);
 
         //var returnedSensor = _sensorService.GetSensorByName("sleepingroom_sensor");
         //Console.WriteLine(returnedSensor.DeviceName);

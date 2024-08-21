@@ -1,79 +1,48 @@
 ﻿using NetLink.Models;
 using NetLink.Session;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NetLink.Utilities;
 
 namespace NetLink.Services;
 
 public interface ISensorService
 {
-    public Sensor AddSensor(Sensor sensor);
-    public Sensor GetSensorByName(string deviceName);
+    public Task<Sensor> AddSensorAsync(Sensor sensor);
+    //public Sensor GetSensorByName(string deviceName);
 }
 
-internal class SensorService : ISensorService
+internal class SensorService(IDeveloperSessionManager developerSessionManager) : ISensorService
 {
-    private readonly IEndUserSessionManager _endUserSessionManager;
-
-    public SensorService(IEndUserSessionManager endUserSessionManager)
+    public async Task<Sensor> AddSensorAsync(Sensor sensor)
     {
-        _endUserSessionManager = endUserSessionManager;
+        const string endUserId = "a3af25fb-ac68-4de7-b2c8-431c1fcae994";
+        var addSensorEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.AddSensorUrl, endUserId)}";
+
+        var httpClient = await developerSessionManager.GetAuthenticatedHttpClientAsync();
+        
+        return new Sensor("asdasd");
     }
 
-    public Sensor AddSensor(Sensor sensor)
-    {
-        string endUserId = _endUserSessionManager.GetLoggedEndUserId();
-        string addSensorEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.AddSensorUrl, endUserId)}";
-
-        using (var httpClient = new HttpClient())
-        {
-            try
-            {
-                var json = JsonConvert.SerializeObject(sensor);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                HttpResponseMessage response = httpClient.PostAsync(addSensorEndpoint, content).Result;
-                response.EnsureSuccessStatusCode();
-
-                var responseBody = response.Content.ReadAsStringAsync().Result;
-                //Sensor apiSensor = JsonConvert.DeserializeObject<Sensor>(responseBody)!;
-
-                return sensor;
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new Exception("An error occurred while adding the sensor. Please check your network connection and try again.", ex);
-            }
-        }
-    }
-
-    public Sensor GetSensorByName(string deviceName)
-    {
-        string endUserId = _endUserSessionManager.GetLoggedEndUserId();
-        string getSensorByNameEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.GetSensorByNameUrl, deviceName, endUserId)}";
-
-        using (var httpClient = new HttpClient())
-        {
-            try
-            {
-                HttpResponseMessage response = httpClient.GetAsync(getSensorByNameEndpoint).Result;
-                response.EnsureSuccessStatusCode();
-
-                var responseBody = response.Content.ReadAsStringAsync().Result;
-                Sensor sensor = JsonConvert.DeserializeObject<Sensor>(responseBody)!;
-
-                return sensor;
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new Exception("An error occurred while getting the sensor. Please check your network connection and try again.", ex);
-            }
-        }
-
-    }
+    // public Sensor GetSensorByName(string deviceName)
+    // {
+    //     string endUserId = _endUserSessionManager.GetLoggedEndUserId();
+    //     string getSensorByNameEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.GetSensorByNameUrl, deviceName, endUserId)}";
+    //
+    //     using (var httpClient = new HttpClient())
+    //     {
+    //         try
+    //         {
+    //             HttpResponseMessage response = httpClient.GetAsync(getSensorByNameEndpoint).Result;
+    //             response.EnsureSuccessStatusCode();
+    //
+    //             var responseBody = response.Content.ReadAsStringAsync().Result;
+    //             Sensor sensor = JsonConvert.DeserializeObject<Sensor>(responseBody)!;
+    //
+    //             return sensor;
+    //         }
+    //         catch (HttpRequestException ex)
+    //         {
+    //             throw new Exception("An error occurred while getting the sensor. Please check your network connection and try again.", ex);
+    //         }
+    //     }
+    // }
 }

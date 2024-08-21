@@ -44,7 +44,7 @@ public class EndUserService(IMapper mapper, NetLinkDbContext dbContext, IDevelop
             .FirstOrDefaultAsync(e => e.Id == endUserId);
 
         if (endUser == null)
-            throw new EndUserException("EndUser does not exist.");
+            throw new NotFoundException("EndUser does not exist.");
 
         if (endUser.DeletedAt.HasValue)
             throw new EndUserException("EndUser account has been deleted.");

@@ -12,7 +12,7 @@ public class SensorRes
     
     public string? DeviceLocation { get; init; }
     
-    public string? DeviceDescription { get; set; }
+    public string? DeviceDescription { get; init; }
     
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; init; }
 }

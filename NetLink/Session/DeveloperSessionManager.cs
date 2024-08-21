@@ -1,49 +1,47 @@
-﻿using NetLink.Utilities;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
+using NetLink.Utilities;
 
 namespace NetLink.Session;
 
 internal interface IDeveloperSessionManager
 {
-    void AddDevTokenAuthentication(string devToken);
+    Task<HttpClient> GetAuthenticatedHttpClientAsync();
 }
 
-internal class DeveloperSessionManager : IDeveloperSessionManager
+internal class DeveloperSessionManager(string devToken) : IDeveloperSessionManager
 {
-    private string? _devToken; //consider using session for this later if it is a good practice to use it
+    private readonly HttpClient _httpClient = new();
+    private string? _jwtToken;
+    private DateTime _tokenExpiration;
 
-    public string? DevToken
+    public async Task<HttpClient> GetAuthenticatedHttpClientAsync()
     {
-        get => _devToken;
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetJwtTokenAsync());
+        return _httpClient;
+    }
+    
+    private async Task RetrieveJwtTokenAsync()
+    {
+        var authUrl = string.Format($"{ApiUrls.BaseUrl}{ApiUrls.AuthUrl}", devToken);
+        var response = await _httpClient.PostAsync(authUrl, null);
+        response.EnsureSuccessStatusCode();
+
+        var token = await response.Content.ReadAsStringAsync();
+        var jwtSecurityToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+
+        _jwtToken = token;
+        _tokenExpiration = jwtSecurityToken.ValidTo;
     }
 
-    public void AddDevTokenAuthentication(string devToken)
+    private async Task<string> GetJwtTokenAsync()
     {
-        CheckDevToken(devToken);
-        _devToken = devToken;
-    }
-
-    internal void CheckDevToken(string devToken)
-    {
-        string tokenCheckEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.DevTokenValidationUrl, devToken)}";
-
-        using (var httpClient = new HttpClient())
+        if (_jwtToken == null || _tokenExpiration < DateTime.UtcNow)
         {
-            try
-            {
-                var response = httpClient.GetAsync(tokenCheckEndpoint).Result;
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception(
-                        "DevToken is invalid or your account is deactivated, please check DevToken in your configuration file or account status.");
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new Exception(
-                    "An error occurred while validating DevToken. Please check your network connection and try again.",
-                    ex);
-            }
+            await RetrieveJwtTokenAsync();
         }
+
+        return _jwtToken!;
     }
+
 }

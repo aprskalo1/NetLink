@@ -23,5 +23,8 @@ public class AutoMapperProfile : Profile
 
         CreateMap<SensorRes, Sensor>();
         CreateMap<Sensor, SensorRes>();
+        
+        CreateMap<DeveloperRes, Developer>();
+        CreateMap<Developer, DeveloperRes>();
     }
 }
