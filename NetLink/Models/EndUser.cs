@@ -1,11 +1,6 @@
 ﻿namespace NetLink.Models;
 
-public class EndUser
+public abstract class EndUser(string? id)
 {
-    public string? Id { get; set; }
-
-    public EndUser(string? id)
-    {
-        Id = id;
-    }
+    public string? Id { get; set; } = id;
 }

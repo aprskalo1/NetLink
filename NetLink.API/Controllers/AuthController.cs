@@ -14,4 +14,11 @@ public class AuthController(IJwtTokenService jwtTokenService, IDeveloperService 
         await developerService.EnsureDevTokenAsync(devToken);
         return Ok(jwtTokenService.GenerateToken());
     }
+
+    [HttpGet("EnsureDevToken")]
+    public async Task<IActionResult> EnsureDevToken(string token)
+    {
+        await developerService.EnsureDevTokenAsync(token);
+        return Ok();
+    }
 }

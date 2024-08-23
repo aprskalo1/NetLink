@@ -2,14 +2,9 @@
 
 namespace NetLink.Models;
 
-public class Sensor
+public class Sensor(string? deviceName)
 {
-    public string? DeviceName { get; set; }
-
-    public Sensor(string? deviceName)
-    {
-        DeviceName = deviceName;
-    }
+    private string? DeviceName { get; set; } = deviceName;
 
     public RecordedValue RecordValue(string value, IRecordedValueService recordedValueService)
     {

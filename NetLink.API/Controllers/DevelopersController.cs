@@ -18,13 +18,6 @@ public class DevelopersController(IDeveloperService developerService) : Controll
         return Ok(await developerService.AddDeveloperAsync(developerDto));
     }
 
-    [HttpGet("EnsureDevToken")]
-    public async Task<IActionResult> EnsureDevToken(string token)
-    {
-        await developerService.EnsureDevTokenAsync(token);
-        return Ok();
-    }
-
     [HttpGet("GetDeveloperIdFromToken")]
     public async Task<IActionResult> GetDeveloperFromTokenAsync(string token)
     {

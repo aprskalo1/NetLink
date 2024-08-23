@@ -18,6 +18,7 @@ internal class SensorService(IDeveloperSessionManager developerSessionManager) :
         var addSensorEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.AddSensorUrl, endUserId)}";
 
         var httpClient = await developerSessionManager.GetAuthenticatedHttpClientAsync();
+        //logic to add sensor
         
         return new Sensor("asdasd");
     }

@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
+using  Microsoft.AspNetCore.Mvc;
 using NetLink.Playground.Models;
 using System.Diagnostics;
 using NetLink.Models;
 using NetLink.Session;
 using NetLink.Services;
-
 
 namespace NetLink.Playground.Controllers;
 
@@ -38,12 +37,12 @@ public class HomeController : Controller
     {
         Sensor sensor1 = new Sensor("playground_test_sensor");
         _sensorService.AddSensorAsync(sensor1);
-
+    
         //sensor1.RecordValue("nova vrijednostttt", _recordedValueService);
-
+    
         //var returnedSensor = _sensorService.GetSensorByName("sleepingroom_sensor");
         //Console.WriteLine(returnedSensor.DeviceName);
-
+    
         return View();
     }
 

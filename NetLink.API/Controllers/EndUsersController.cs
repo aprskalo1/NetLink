@@ -18,7 +18,6 @@ public class EndUsersController(IEndUserService endUserService) : ControllerBase
         return Ok(await endUserService.AddEndUserAsync(endUserDto, devToken));
     }
 
-    //TODO: maybe not needed as API endpoint
     [HttpGet("EnsureEndUserStatus")]
     public async Task<IActionResult> EnsureEndUserExistsAsync(string endUserId)
     {

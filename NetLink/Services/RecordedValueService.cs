@@ -1,9 +1,5 @@
 ﻿using NetLink.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NetLink.Session;
 using NetLink.Utilities;
@@ -15,18 +11,11 @@ public interface IRecordedValueService
     public RecordedValue RecordValue(string deviceName, RecordedValue recordedValue);
 }
 
-internal class RecordedValueService : IRecordedValueService
+internal class RecordedValueService(IEndUserSessionManager endUserSessionManager) : IRecordedValueService
 {
-    private readonly IEndUserSessionManager _endUserSessionManager;
-
-    public RecordedValueService(IEndUserSessionManager endUserSessionManager)
-    {
-        _endUserSessionManager = endUserSessionManager;
-    }
-
     public RecordedValue RecordValue(string deviceName, RecordedValue recordedValue)
     {
-        var endUserId = _endUserSessionManager.GetLoggedEndUserId();
+        var endUserId = endUserSessionManager.GetLoggedEndUserId();
         string recordValueEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.AddRecordedValueUrl, deviceName, endUserId)}";
 
         using (var http = new HttpClient())

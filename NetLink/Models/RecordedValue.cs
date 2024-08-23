@@ -1,11 +1,6 @@
 ﻿namespace NetLink.Models;
 
-public class RecordedValue
+public class RecordedValue(string? value)
 {
-    public RecordedValue(string? value)
-    {
-        Value = value;
-    }
-
-    public string? Value { get; set; }
+    public string? Value { get; set; } = value;
 }

@@ -5,17 +5,17 @@ namespace NetLink.Session;
 
 public interface IEndUserSessionManager
 {
-    void LogEndUserIn(EndUser endUser);
+    Task LogInEndUserAsync(EndUser endUser);
     string GetLoggedEndUserId();
 }
 
-internal class EndUserSessionManager : IEndUserSessionManager
+internal class EndUserSessionManager(IDeveloperSessionManager developerSessionManager) : IEndUserSessionManager
 {
     private EndUser? _endUser;
 
-    public void LogEndUserIn(EndUser endUser)
+    public async Task LogInEndUserAsync(EndUser endUser)
     {
-        CheckEndUser(endUser.Id!);
+        await CheckEndUserAsync(endUser.Id!);
         _endUser = endUser;
     }
 
@@ -29,25 +29,24 @@ internal class EndUserSessionManager : IEndUserSessionManager
         return _endUser.Id!;
     }
 
-    internal void CheckEndUser(string endUserId)
+    private async Task CheckEndUserAsync(string endUserId)
     {
-        string tokenCheckEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.EndUserValidationUrl, endUserId)}";
+        var tokenCheckEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.EndUserValidationUrl, endUserId)}";
 
-        using (var httpClient = new HttpClient())
+        using var httpClient = await developerSessionManager.GetAuthenticatedHttpClientAsync();
+        var response = await httpClient.GetAsync(tokenCheckEndpoint);
+
+        if (!response.IsSuccessStatusCode)
         {
-            try
-            {
-                var response = httpClient.GetAsync(tokenCheckEndpoint).Result;
+            var errorMessage = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception("EndUserId invalid, please use another account.");
-                }
-            }
-            catch (HttpRequestException ex)
+            throw response.StatusCode switch
             {
-                throw new Exception("An error occurred while validating EndUserId. Please check your network connection and try again.", ex);
-            }
+                System.Net.HttpStatusCode.NotFound => new Exception($"EndUser does not exist. Server message: {errorMessage}"),
+                System.Net.HttpStatusCode.BadRequest => new Exception($"Invalid EndUser. Server message: {errorMessage}"),
+                System.Net.HttpStatusCode.InternalServerError => new Exception($"Server error occurred. Message: {errorMessage}"),
+                _ => new Exception($"Unexpected error. Status code: {(int)response.StatusCode}, Message: {errorMessage}")
+            };
         }
     }
 }
