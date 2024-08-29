@@ -12,7 +12,7 @@ namespace NetLink.API.Services;
 public interface IDeveloperService
 {
     Task<Guid> AddDeveloperAsync(DeveloperDto developerDto);
-    Task EnsureDevTokenAsync(string devToken);
+    Task ValidateDeveloperAsync(string devToken);
     Task<Guid> GetDeveloperIdFromTokenAsync(string devToken);
     Task<DeveloperRes> GetDeveloperByIdAsync(Guid id);
     Task<DeveloperRes> GetDeveloperByUsernameAsync(string username);
@@ -39,7 +39,7 @@ public class DeveloperService(IMapper mapper, NetLinkDbContext dbContext) : IDev
         return developer.Id;
     }
 
-    public async Task EnsureDevTokenAsync(string devToken)
+    public async Task ValidateDeveloperAsync(string devToken)
     {
         var developer = await dbContext.Developers.FirstOrDefaultAsync(d => d.DevToken == devToken);
 

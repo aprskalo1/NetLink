@@ -1,6 +1,12 @@
 ﻿namespace NetLink.Models;
 
-public abstract class EndUser(string? id)
+public class EndUser(string? id)
 {
-    public string? Id { get; set; } = id;
+    public string? Id { get; } = id;
+
+    public DateTime CreatedAt { get; init; }
+
+    public DateTime? DeletedAt { get; set; }
+
+    public bool Active { get; set; }
 }

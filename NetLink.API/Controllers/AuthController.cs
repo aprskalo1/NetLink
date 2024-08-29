@@ -11,14 +11,14 @@ public class AuthController(IJwtTokenService jwtTokenService, IDeveloperService 
     [HttpPost("AuthorizeClient")]
     public async Task<IActionResult> AuthorizeClient(string devToken)
     {
-        await developerService.EnsureDevTokenAsync(devToken);
+        await developerService.ValidateDeveloperAsync(devToken);
         return Ok(jwtTokenService.GenerateToken());
     }
 
-    [HttpGet("EnsureDevToken")]
-    public async Task<IActionResult> EnsureDevToken(string token)
+    [HttpGet("ValidateDeveloper")]
+    public async Task<IActionResult> ValidateDeveloper(string token)
     {
-        await developerService.EnsureDevTokenAsync(token);
+        await developerService.ValidateDeveloperAsync(token);
         return Ok();
     }
 }

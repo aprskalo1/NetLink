@@ -21,7 +21,7 @@ public class SensorOperationsService(IMapper mapper, NetLinkDbContext dbContext,
 {
     public async Task<Guid> AddSensorAsync(SensorDto sensorDto, string endUserId)
     {
-        await endUserService.EnsureEndUserStatusAsync(endUserId);
+        await endUserService.ValidateEndUserAsync(endUserId);
 
         if (await DoesSensorExistAsync(sensorDto.DeviceName!, endUserId))
         {
@@ -80,7 +80,7 @@ public class SensorOperationsService(IMapper mapper, NetLinkDbContext dbContext,
 
     private async Task<Guid> GetSensorIdByNameAsync(string sensorName, string endUserId)
     {
-        await endUserService.EnsureEndUserStatusAsync(endUserId);
+        await endUserService.ValidateEndUserAsync(endUserId);
         
         var existingSensor = await dbContext.EndUserSensors
             .Include(e => e.Sensor)

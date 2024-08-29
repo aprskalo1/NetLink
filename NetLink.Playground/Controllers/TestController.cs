@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using NetLink.Models;
 using NetLink.Services;
 
 namespace NetLink.Playground.Controllers;
@@ -24,8 +23,8 @@ public class TestController : Controller
         //var returnedSensor = _sensorService.GetSensorByName("sleepingroom_sensor");
         //Console.WriteLine(returnedSensor.DeviceName);
         
-        Sensor sensor1 = new Sensor("playground_test_sensor");
-        _sensorService.AddSensorAsync(sensor1);
+        // Sensor sensor1 = new Sensor("playground_test_sensor");
+        // _sensorService.AddSensorAsync(sensor1);
 
         return View();
     }

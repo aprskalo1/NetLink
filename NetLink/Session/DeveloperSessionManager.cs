@@ -9,6 +9,7 @@ namespace NetLink.Session;
 internal interface IDeveloperSessionManager
 {
     Task<HttpClient> GetAuthenticatedHttpClientAsync();
+    string? GetDevToken();
 }
 
 internal class DeveloperSessionManager : IDeveloperSessionManager
@@ -27,12 +28,20 @@ internal class DeveloperSessionManager : IDeveloperSessionManager
     private async Task ValidateDevTokenAsync(string? devToken)
     {
         var devTokenValidationUrl = string.Format($"{ApiUrls.BaseUrl}{ApiUrls.DevTokenValidationUrl}", devToken);
-        using var response = await _httpClient.GetAsync(devTokenValidationUrl);
 
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorRes>();
-            throw new Exception($"DevToken validation failed: {errorResponse?.Message}");
+            var response = await _httpClient.GetAsync(devTokenValidationUrl);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorResponse = await response.Content.ReadFromJsonAsync<ErrorRes>();
+                throw new Exception($"DevToken validation failed: {errorResponse?.Message}");
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new Exception("DevToken validation failed: NetLink server is unreachable, if the problem persists, please contact support.", ex);
         }
     }
 
@@ -42,11 +51,13 @@ internal class DeveloperSessionManager : IDeveloperSessionManager
         return _httpClient;
     }
 
+    public string? GetDevToken() => _devToken;
+
     private async Task RetrieveJwtTokenAsync()
     {
         var authUrl = string.Format($"{ApiUrls.BaseUrl}{ApiUrls.AuthUrl}", _devToken);
 
-        using var response = await _httpClient.PostAsync(authUrl, null);
+        var response = await _httpClient.PostAsync(authUrl, null);
         response.EnsureSuccessStatusCode();
 
         var token = await response.Content.ReadAsStringAsync();

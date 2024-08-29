@@ -6,9 +6,9 @@ public class EndUser
 
     public DateTime CreatedAt { get; init; } = DateTime.Now;
 
-    public DateTime? DeletedAt { get; init; }
+    public DateTime? DeletedAt { get; set; }
 
-    public bool Active { get; init; } = true;
+    public bool Active { get; set; } = true;
 
     public ICollection<DeveloperUser>? DeveloperUsers { get; init; }
 
