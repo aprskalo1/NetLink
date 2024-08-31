@@ -13,12 +13,14 @@ public interface IEndUserService
     Task<string> RegisterEndUserAsync(EndUserDto endUserDto, string devToken);
     Task<EndUserRes> GetEndUserByIdAsync(string endUserId);
     Task ValidateEndUserAsync(string endUserId);
-    Task<List<EndUserRes>> ListDevelopersEndUsersAsync(string devToken);
+    Task<List<EndUserRes>> ListDevelopersEndUsersAsync(string devToken); //TODO: Put this in developer service
     Task DeactivateEndUserAsync(string endUserId);
     Task ReactivateEndUserAsync(string endUserId);
     Task SoftDeleteEndUserAsync(string endUserId);
     Task RestoreEndUserAsync(string endUserId);
     Task AssignSensorsToEndUserAsync(List<Guid> sensorIds, string endUserId);
+    
+    //Todo: add ListEndUserSensorsAsync
 }
 
 public class EndUserService(IMapper mapper, NetLinkDbContext dbContext, IDeveloperService developerService)

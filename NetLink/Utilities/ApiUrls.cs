@@ -18,7 +18,10 @@ internal static class ApiUrls
     public const string AssignSensorsToEndUserUrl = "/EndUsers/AssignSensorsToEndUser?endUserId={0}";
     
     public const string AddSensorUrl = "/Sensors/AddSensor?endUserId={0}";
-    public const string GetSensorByNameUrl = "/Sensors/GetSensorById?deviceName={0}&endUserId={1}";
+    public const string GetSensorByNameUrl = "/Sensors/GetSensorByName?deviceName={0}&endUserId={1}";
+    public const string GetSensorByIdUrl = "/Sensors/GetSensorById?sensorId={0}&endUserId={1}";
+    public const string UpdateSensorUrl = "/Sensors/UpdateSensor?sensorId={0}&endUserId={1}";
+    public const string DeleteSensorUrl = "/Sensors/DeleteSensor?sensorId={0}&endUserId={1}";
 
     public const string AddRecordedValueUrl = "/RecordedValues/AddRecordedValue?sensorName={0}&endUserId={1}";
 }

@@ -22,7 +22,7 @@ internal class DeveloperSessionManager : IDeveloperSessionManager
     public DeveloperSessionManager(string? devToken)
     {
         ValidateDevTokenAsync(devToken).GetAwaiter().GetResult();
-        _devToken = devToken;
+        _devToken = devToken; 
     }
 
     private async Task ValidateDevTokenAsync(string? devToken)

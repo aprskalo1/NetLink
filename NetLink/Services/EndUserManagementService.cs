@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using NetLink.Helpers;
 using NetLink.Models;
 using NetLink.Models.DTOs;
 using NetLink.Session;
@@ -19,11 +20,13 @@ public interface IEndUserManagementService
     Task AssignSensorsToEndUserAsync(List<Guid> sensorIds, string endUserId);
 }
 
-internal class EndUserManagementService(IDeveloperSessionManager developerSessionManager) : IEndUserManagementService
+internal class EndUserManagementService(IDeveloperSessionManager developerSessionManager) : HttpHelper(developerSessionManager), IEndUserManagementService
 {
+    private readonly IDeveloperSessionManager _developerSessionManager1 = developerSessionManager;
+
     public async Task<string> RegisterEndUserAsync(EndUser endUser)
     {
-        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.EndUserRegistrationUrl, developerSessionManager.GetDevToken())}";
+        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.EndUserRegistrationUrl, _developerSessionManager1.GetDevToken())}";
         var response = await SendRequestAsync<string>(HttpMethod.Post, endpoint, endUser);
         return response ?? string.Empty;
     }
@@ -43,7 +46,7 @@ internal class EndUserManagementService(IDeveloperSessionManager developerSessio
 
     public async Task<List<EndUser>> ListDevelopersEndUsersAsync()
     {
-        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.ListDevelopersEndUsersUrl, developerSessionManager.GetDevToken())}";
+        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.ListDevelopersEndUsersUrl, _developerSessionManager1.GetDevToken())}";
         var response = await SendRequestAsync<List<EndUser>>(HttpMethod.Get, endpoint);
         return response ?? [];
     }
@@ -76,67 +79,5 @@ internal class EndUserManagementService(IDeveloperSessionManager developerSessio
     {
         var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.AssignSensorsToEndUserUrl, endUserId)}";
         await SendRequestAsync(HttpMethod.Post, endpoint, sensorIds);
-    }
-
-    private async Task SendRequestAsync(HttpMethod method, string endpoint, object? content = null)
-    {
-        var httpClient = await developerSessionManager.GetAuthenticatedHttpClientAsync();
-        var requestMessage = new HttpRequestMessage(method, endpoint);
-
-        if (content != null)
-        {
-            requestMessage.Content = JsonContent.Create(content);
-        }
-
-        try
-        {
-            var response = await httpClient.SendAsync(requestMessage);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorResponse = await response.Content.ReadFromJsonAsync<ErrorRes>();
-                throw new HttpRequestException(errorResponse?.Message ?? "An unknown error occurred.", null, response.StatusCode);
-            }
-        }
-        catch (Exception ex) when (ex is not HttpRequestException)
-        {
-            throw new HttpRequestException("An error occurred while processing the request.", ex);
-        }
-    }
-
-    private async Task<T?> SendRequestAsync<T>(HttpMethod method, string endpoint, object? content = null)
-    {
-        var httpClient = await developerSessionManager.GetAuthenticatedHttpClientAsync();
-        var requestMessage = new HttpRequestMessage(method, endpoint);
-
-        if (content != null)
-        {
-            requestMessage.Content = JsonContent.Create(content);
-        }
-
-        try
-        {
-            var response = await httpClient.SendAsync(requestMessage);
-
-            if (response.IsSuccessStatusCode)
-            {
-                if (response.Content.Headers.ContentLength == 0)
-                {
-                    return default;
-                }
-
-                if (typeof(T) == typeof(string))
-                    return (T)(object)await response.Content.ReadAsStringAsync();
-
-                return await response.Content.ReadFromJsonAsync<T>();
-            }
-
-            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorRes>();
-            throw new HttpRequestException(errorResponse?.Message ?? "An unknown error occurred.", null, response.StatusCode);
-        }
-        catch (Exception ex) when (ex is not HttpRequestException)
-        {
-            throw new HttpRequestException("An error occurred while processing the request.", ex);
-        }
     }
 }

@@ -25,9 +25,9 @@ public class DevelopersController(IDeveloperService developerService) : Controll
     }
 
     [HttpGet("GetDeveloperById")]
-    public async Task<IActionResult> GetDeveloperByIdAsync(Guid id)
+    public async Task<IActionResult> GetDeveloperByIdAsync(Guid developerId)
     {
-        return Ok(await developerService.GetDeveloperByIdAsync(id));
+        return Ok(await developerService.GetDeveloperByIdAsync(developerId));
     }
 
     [HttpGet("GetDeveloperByUsername")]
@@ -37,45 +37,45 @@ public class DevelopersController(IDeveloperService developerService) : Controll
     }
 
     [HttpPut("UpdateDeveloper")]
-    public async Task<IActionResult> UpdateDeveloperAsync(Guid id, DeveloperDto developerDto)
+    public async Task<IActionResult> UpdateDeveloperAsync(Guid developerId, DeveloperDto developerDto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        return Ok(await developerService.UpdateDeveloperAsync(id, developerDto));
+        return Ok(await developerService.UpdateDeveloperAsync(developerId, developerDto));
     }
 
     [HttpPatch("DeactivateDeveloper")]
-    public async Task<IActionResult> DeactivateDeveloperAsync(Guid id)
+    public async Task<IActionResult> DeactivateDeveloperAsync(Guid developerId)
     {
-        await developerService.DeactivateDeveloperAsync(id);
+        await developerService.DeactivateDeveloperAsync(developerId);
         return Ok();
     }
 
     [HttpPatch("ReactivateDeveloper")]
-    public async Task<IActionResult> ReactivateDeveloperAsync(Guid id)
+    public async Task<IActionResult> ReactivateDeveloperAsync(Guid developerId)
     {
-        await developerService.ReactivateDeveloperAsync(id);
+        await developerService.ReactivateDeveloperAsync(developerId);
         return Ok();
     }
 
     [HttpPatch("SoftDeleteDeveloper")]
-    public async Task<IActionResult> SoftDeleteDeveloperAsync(Guid id)
+    public async Task<IActionResult> SoftDeleteDeveloperAsync(Guid developerId)
     {
-        await developerService.SoftDeleteDeveloperAsync(id);
+        await developerService.SoftDeleteDeveloperAsync(developerId);
         return Ok();
     }
 
     [HttpPatch("RestoreDeveloper")]
-    public async Task<IActionResult> RestoreDeveloperAsync(Guid id)
+    public async Task<IActionResult> RestoreDeveloperAsync(Guid developerId)
     {
-        await developerService.RestoreDeveloperAsync(id);
+        await developerService.RestoreDeveloperAsync(developerId);
         return Ok();
     }
 
     [HttpDelete("DeleteDeveloper")]
-    public async Task<IActionResult> DeleteDeveloperAsync(Guid id)
+    public async Task<IActionResult> DeleteDeveloperAsync(Guid developerId)
     {
-        await developerService.DeleteDeveloperAsync(id);
+        await developerService.DeleteDeveloperAsync(developerId);
         return Ok();
     }
 

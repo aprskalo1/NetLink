@@ -14,14 +14,14 @@ public interface IDeveloperService
     Task<Guid> AddDeveloperAsync(DeveloperDto developerDto);
     Task ValidateDeveloperAsync(string devToken);
     Task<Guid> GetDeveloperIdFromTokenAsync(string devToken);
-    Task<DeveloperRes> GetDeveloperByIdAsync(Guid id);
+    Task<DeveloperRes> GetDeveloperByIdAsync(Guid developerId);
     Task<DeveloperRes> GetDeveloperByUsernameAsync(string username);
-    Task<DeveloperRes> UpdateDeveloperAsync(Guid id, DeveloperDto developerDto);
-    Task DeactivateDeveloperAsync(Guid id);
-    Task ReactivateDeveloperAsync(Guid id);
-    Task SoftDeleteDeveloperAsync(Guid id);
-    Task RestoreDeveloperAsync(Guid id);
-    Task DeleteDeveloperAsync(Guid id);
+    Task<DeveloperRes> UpdateDeveloperAsync(Guid developerId, DeveloperDto developerDto);
+    Task DeactivateDeveloperAsync(Guid developerId);
+    Task ReactivateDeveloperAsync(Guid developerId);
+    Task SoftDeleteDeveloperAsync(Guid developerId);
+    Task RestoreDeveloperAsync(Guid developerId);
+    Task DeleteDeveloperAsync(Guid developerId);
     Task<List<DeveloperRes>> ListDevelopersAsync(); //TODO: Add pagination, filtering, and sorting
 }
 
@@ -65,9 +65,9 @@ public class DeveloperService(IMapper mapper, NetLinkDbContext dbContext) : IDev
         return developer.Id;
     }
 
-    public async Task<DeveloperRes> GetDeveloperByIdAsync(Guid id)
+    public async Task<DeveloperRes> GetDeveloperByIdAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(id);
+        var developer = await FindDeveloperByIdAsync(developerId);
         return mapper.Map<DeveloperRes>(developer);
     }
 
@@ -76,9 +76,9 @@ public class DeveloperService(IMapper mapper, NetLinkDbContext dbContext) : IDev
             ? mapper.Map<DeveloperRes>(developer)
             : throw new NotFoundException("Developer with this username does not exist.");
 
-    public async Task<DeveloperRes> UpdateDeveloperAsync(Guid id, DeveloperDto developerDto)
+    public async Task<DeveloperRes> UpdateDeveloperAsync(Guid developerId, DeveloperDto developerDto)
     {
-        var developer = await FindDeveloperByIdAsync(id);
+        var developer = await FindDeveloperByIdAsync(developerId);
 
         mapper.Map(developerDto, developer);
         await dbContext.SaveChangesAsync();
@@ -86,37 +86,37 @@ public class DeveloperService(IMapper mapper, NetLinkDbContext dbContext) : IDev
         return mapper.Map<DeveloperRes>(developer);
     }
 
-    public async Task DeactivateDeveloperAsync(Guid id)
+    public async Task DeactivateDeveloperAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(id);
+        var developer = await FindDeveloperByIdAsync(developerId);
         developer.Active = false;
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task ReactivateDeveloperAsync(Guid id)
+    public async Task ReactivateDeveloperAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(id);
+        var developer = await FindDeveloperByIdAsync(developerId);
         developer.Active = true;
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task SoftDeleteDeveloperAsync(Guid id)
+    public async Task SoftDeleteDeveloperAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(id);
+        var developer = await FindDeveloperByIdAsync(developerId);
         developer.DeletedAt = DateTime.Now;
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task RestoreDeveloperAsync(Guid id)
+    public async Task RestoreDeveloperAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(id);
+        var developer = await FindDeveloperByIdAsync(developerId);
         developer.DeletedAt = null;
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteDeveloperAsync(Guid id)
+    public async Task DeleteDeveloperAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(id);
+        var developer = await FindDeveloperByIdAsync(developerId);
         dbContext.Developers.Remove(developer);
         await dbContext.SaveChangesAsync();
     }
@@ -144,7 +144,7 @@ public class DeveloperService(IMapper mapper, NetLinkDbContext dbContext) : IDev
             throw new DeveloperException("Developer with this username already exists. Please use another account.");
     }
 
-    private string GenerateDevToken()
+    private static string GenerateDevToken()
     {
         const string prefix = "NL";
 
