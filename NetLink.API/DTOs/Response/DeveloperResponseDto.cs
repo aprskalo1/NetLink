@@ -1,6 +1,6 @@
-namespace NetLink.API.Shared;
+namespace NetLink.API.DTOs.Response;
 
-public class DeveloperRes
+public class DeveloperResponseDto
 {
     public Guid Id { get; init; }
 

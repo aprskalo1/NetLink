@@ -1,6 +1,6 @@
-namespace NetLink.API.Shared;
+namespace NetLink.API.DTOs.Response;
 
-public class EndUserRes
+public class EndUserResponseDto
 {
     public string? Id { get; init; } // ID returned from external login service
 

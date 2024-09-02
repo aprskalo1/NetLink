@@ -2,36 +2,36 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using NetLink.API.Data;
+using NetLink.API.DTOs.Request;
+using NetLink.API.DTOs.Response;
 using NetLink.API.Exceptions;
 using NetLink.API.Models;
-using NetLink.API.Shared;
-using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Services;
 
 public interface IDeveloperService
 {
-    Task<Guid> AddDeveloperAsync(DeveloperDto developerDto);
+    Task<Guid> AddDeveloperAsync(DeveloperRequestDto developerRequestDto);
     Task ValidateDeveloperAsync(string devToken);
     Task<Guid> GetDeveloperIdFromTokenAsync(string devToken);
-    Task<DeveloperRes> GetDeveloperByIdAsync(Guid developerId);
-    Task<DeveloperRes> GetDeveloperByUsernameAsync(string username);
-    Task<DeveloperRes> UpdateDeveloperAsync(Guid developerId, DeveloperDto developerDto);
+    Task<DeveloperResponseDto> GetDeveloperByIdAsync(Guid developerId);
+    Task<DeveloperResponseDto> GetDeveloperByUsernameAsync(string username);
+    Task<DeveloperResponseDto> UpdateDeveloperAsync(Guid developerId, DeveloperRequestDto developerRequestDto);
     Task DeactivateDeveloperAsync(Guid developerId);
     Task ReactivateDeveloperAsync(Guid developerId);
     Task SoftDeleteDeveloperAsync(Guid developerId);
     Task RestoreDeveloperAsync(Guid developerId);
     Task DeleteDeveloperAsync(Guid developerId);
-    Task<List<DeveloperRes>> ListDevelopersAsync(); //TODO: Add pagination, filtering, and sorting
+    Task<List<DeveloperResponseDto>> ListDevelopersAsync(); //TODO: Add pagination, filtering, and sorting
 }
 
 public class DeveloperService(IMapper mapper, NetLinkDbContext dbContext) : IDeveloperService
 {
-    public async Task<Guid> AddDeveloperAsync(DeveloperDto developerDto)
+    public async Task<Guid> AddDeveloperAsync(DeveloperRequestDto developerRequestDto)
     {
-        await CheckIfDeveloperExistsAsync(developerDto.Username!);
+        await CheckIfDeveloperExistsAsync(developerRequestDto.Username!);
 
-        var developer = mapper.Map<Developer>(developerDto);
+        var developer = mapper.Map<Developer>(developerRequestDto);
         developer.DevToken = GenerateDevToken();
         dbContext.Developers.Add(developer);
         await dbContext.SaveChangesAsync();
@@ -65,25 +65,25 @@ public class DeveloperService(IMapper mapper, NetLinkDbContext dbContext) : IDev
         return developer.Id;
     }
 
-    public async Task<DeveloperRes> GetDeveloperByIdAsync(Guid developerId)
+    public async Task<DeveloperResponseDto> GetDeveloperByIdAsync(Guid developerId)
     {
         var developer = await FindDeveloperByIdAsync(developerId);
-        return mapper.Map<DeveloperRes>(developer);
+        return mapper.Map<DeveloperResponseDto>(developer);
     }
 
-    public async Task<DeveloperRes> GetDeveloperByUsernameAsync(string username) =>
+    public async Task<DeveloperResponseDto> GetDeveloperByUsernameAsync(string username) =>
         await dbContext.Developers.FirstOrDefaultAsync(d => d.Username == username) is { } developer
-            ? mapper.Map<DeveloperRes>(developer)
+            ? mapper.Map<DeveloperResponseDto>(developer)
             : throw new NotFoundException("Developer with this username does not exist.");
 
-    public async Task<DeveloperRes> UpdateDeveloperAsync(Guid developerId, DeveloperDto developerDto)
+    public async Task<DeveloperResponseDto> UpdateDeveloperAsync(Guid developerId, DeveloperRequestDto developerRequestDto)
     {
         var developer = await FindDeveloperByIdAsync(developerId);
 
-        mapper.Map(developerDto, developer);
+        mapper.Map(developerRequestDto, developer);
         await dbContext.SaveChangesAsync();
 
-        return mapper.Map<DeveloperRes>(developer);
+        return mapper.Map<DeveloperResponseDto>(developer);
     }
 
     public async Task DeactivateDeveloperAsync(Guid developerId)
@@ -121,10 +121,10 @@ public class DeveloperService(IMapper mapper, NetLinkDbContext dbContext) : IDev
         await dbContext.SaveChangesAsync();
     }
 
-    public Task<List<DeveloperRes>> ListDevelopersAsync()
+    public Task<List<DeveloperResponseDto>> ListDevelopersAsync()
     {
         return dbContext.Developers
-            .Select(d => mapper.Map<DeveloperRes>(d))
+            .Select(d => mapper.Map<DeveloperResponseDto>(d))
             .ToListAsync();
     }
 

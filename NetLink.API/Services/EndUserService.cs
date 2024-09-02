@@ -1,37 +1,37 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using NetLink.API.Data;
+using NetLink.API.DTOs.Request;
+using NetLink.API.DTOs.Response;
 using NetLink.API.Exceptions;
 using NetLink.API.Models;
-using NetLink.API.Shared;
-using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Services;
 
 public interface IEndUserService
 {
-    Task<string> RegisterEndUserAsync(EndUserDto endUserDto, string devToken);
-    Task<EndUserRes> GetEndUserByIdAsync(string endUserId);
+    Task<string> RegisterEndUserAsync(EndUserRequestDto endUserRequestDto, string devToken);
+    Task<EndUserResponseDto> GetEndUserByIdAsync(string endUserId);
     Task ValidateEndUserAsync(string endUserId);
-    Task<List<EndUserRes>> ListDevelopersEndUsersAsync(string devToken); //TODO: Put this in developer service
+    Task<List<EndUserResponseDto>> ListDevelopersEndUsersAsync(string devToken); //TODO: Put this in developer service
     Task DeactivateEndUserAsync(string endUserId);
     Task ReactivateEndUserAsync(string endUserId);
     Task SoftDeleteEndUserAsync(string endUserId);
     Task RestoreEndUserAsync(string endUserId);
     Task AssignSensorsToEndUserAsync(List<Guid> sensorIds, string endUserId);
-    
+
     //Todo: add ListEndUserSensorsAsync
 }
 
 public class EndUserService(IMapper mapper, NetLinkDbContext dbContext, IDeveloperService developerService)
     : IEndUserService
 {
-    public async Task<string> RegisterEndUserAsync(EndUserDto endUserDto, string devToken)
+    public async Task<string> RegisterEndUserAsync(EndUserRequestDto endUserRequestDto, string devToken)
     {
         var developerId = await developerService.GetDeveloperIdFromTokenAsync(devToken);
-        var endUser = mapper.Map<EndUser>(endUserDto);
+        var endUser = mapper.Map<EndUser>(endUserRequestDto);
 
-        if (await ValidateEndUserAssociationAsync(endUserDto.Id!, developerId))
+        if (await ValidateEndUserAssociationAsync(endUserRequestDto.Id!, developerId))
             throw new EndUserException("EndUser already exists, please use another account.");
 
         var developerUser = new DeveloperUser
@@ -48,14 +48,14 @@ public class EndUserService(IMapper mapper, NetLinkDbContext dbContext, IDevelop
     }
 
     //TODO: Add devToken or developerId for future use for security reasons
-    public async Task<EndUserRes> GetEndUserByIdAsync(string endUserId)
+    public async Task<EndUserResponseDto> GetEndUserByIdAsync(string endUserId)
     {
         var endUser = await dbContext.EndUsers.FirstOrDefaultAsync(e => e.Id == endUserId);
 
         if (endUser == null)
             throw new NotFoundException("EndUser does not exist.");
 
-        return mapper.Map<EndUserRes>(endUser);
+        return mapper.Map<EndUserResponseDto>(endUser);
     }
 
     //TODO: Add devToken or developerId for future use for security reasons
@@ -74,13 +74,13 @@ public class EndUserService(IMapper mapper, NetLinkDbContext dbContext, IDevelop
             throw new EndUserException("EndUser account is not active.");
     }
 
-    public async Task<List<EndUserRes>> ListDevelopersEndUsersAsync(string devToken)
+    public async Task<List<EndUserResponseDto>> ListDevelopersEndUsersAsync(string devToken)
     {
         await developerService.ValidateDeveloperAsync(devToken);
 
         var developersUsers = await dbContext.DeveloperUsers
             .Where(du => du.Developer!.DevToken == devToken)
-            .Select(du => mapper.Map<EndUserRes>(du.EndUser))
+            .Select(du => mapper.Map<EndUserResponseDto>(du.EndUser))
             .ToListAsync();
 
         return developersUsers;

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
+using NetLink.API.DTOs.Request;
+using NetLink.API.DTOs.Response;
 using NetLink.API.Models;
-using NetLink.API.Shared;
-using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Mapping;
 
@@ -9,25 +9,28 @@ public class AutoMapperProfile : Profile
 {
     public AutoMapperProfile()
     {
-        CreateMap<Sensor, SensorDto>();
-        CreateMap<SensorDto, Sensor>();
+        CreateMap<Sensor, SensorRequestDto>();
+        CreateMap<SensorRequestDto, Sensor>();
 
-        CreateMap<Developer, DeveloperDto>();
-        CreateMap<DeveloperDto, Developer>();
+        CreateMap<Developer, DeveloperRequestDto>();
+        CreateMap<DeveloperRequestDto, Developer>();
 
-        CreateMap<EndUser, EndUserDto>();
-        CreateMap<EndUserDto, EndUser>();
+        CreateMap<EndUser, EndUserRequestDto>();
+        CreateMap<EndUserRequestDto, EndUser>();
 
-        CreateMap<RecordedValue, RecordedValueDto>();
-        CreateMap<RecordedValueDto, RecordedValue>();
+        CreateMap<RecordedValue, RecordedValueRequestDto>();
+        CreateMap<RecordedValueRequestDto, RecordedValue>();
 
-        CreateMap<SensorRes, Sensor>();
-        CreateMap<Sensor, SensorRes>();
+        CreateMap<SensorResponseDto, Sensor>();
+        CreateMap<Sensor, SensorResponseDto>();
 
-        CreateMap<DeveloperRes, Developer>();
-        CreateMap<Developer, DeveloperRes>();
+        CreateMap<DeveloperResponseDto, Developer>();
+        CreateMap<Developer, DeveloperResponseDto>();
 
-        CreateMap<EndUserRes, EndUser>();
-        CreateMap<EndUser, EndUserRes>();
+        CreateMap<EndUserResponseDto, EndUser>();
+        CreateMap<EndUser, EndUserResponseDto>();
+
+        CreateMap<SensorGroupRequestDto, SensorGroup>();
+        CreateMap<SensorGroup, SensorGroupRequestDto>();
     }
 }

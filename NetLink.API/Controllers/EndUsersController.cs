@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NetLink.API.DTOs.Request;
+using NetLink.API.DTOs.Response;
 using NetLink.API.Services;
-using NetLink.API.Shared;
-using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Controllers;
 
@@ -12,15 +12,15 @@ namespace NetLink.API.Controllers;
 public class EndUsersController(IEndUserService endUserService) : ControllerBase
 {
     [HttpPost("RegisterEndUser")]
-    public async Task<ActionResult> RegisterEndUserAsync(EndUserDto endUserDto, string devToken)
+    public async Task<ActionResult> RegisterEndUserAsync(EndUserRequestDto endUserRequestDto, string devToken)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        return Ok(await endUserService.RegisterEndUserAsync(endUserDto, devToken));
+        return Ok(await endUserService.RegisterEndUserAsync(endUserRequestDto, devToken));
     }
 
     [HttpGet("GetEndUserById")]
-    public async Task<ActionResult<EndUserRes>> GetEndUserByIdAsync(string endUserId)
+    public async Task<ActionResult<EndUserResponseDto>> GetEndUserByIdAsync(string endUserId)
     {
         return Ok(await endUserService.GetEndUserByIdAsync(endUserId));
     }
@@ -33,7 +33,7 @@ public class EndUsersController(IEndUserService endUserService) : ControllerBase
     }
 
     [HttpGet("ListDevelopersEndUsers")]
-    public async Task<ActionResult<List<EndUserRes>>> ListDeveloperEndUsersAsync(string devToken)
+    public async Task<ActionResult<List<EndUserResponseDto>>> ListDeveloperEndUsersAsync(string devToken)
     {
         return Ok(await endUserService.ListDevelopersEndUsersAsync(devToken));
     }

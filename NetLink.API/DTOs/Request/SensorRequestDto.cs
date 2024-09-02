@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace NetLink.API.Shared.DTOs;
+namespace NetLink.API.DTOs.Request;
 
-public class SensorDto
+public class SensorRequestDto
 {
     [Required]
     public string? DeviceName { get; init; }

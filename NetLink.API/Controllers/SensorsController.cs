@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NetLink.API.DTOs.Request;
 using NetLink.API.Services;
-using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Controllers;
 
@@ -11,11 +11,11 @@ namespace NetLink.API.Controllers;
 public class SensorsController(ISensorOperationsService sensorService) : ControllerBase
 {
     [HttpPost("AddSensor")]
-    public async Task<ActionResult> AddSensorAsync(SensorDto sensorDto, string endUserId)
+    public async Task<ActionResult> AddSensorAsync(SensorRequestDto sensorRequestDto, string endUserId)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        return Ok(await sensorService.AddSensorAsync(sensorDto, endUserId));
+        return Ok(await sensorService.AddSensorAsync(sensorRequestDto, endUserId));
     }
 
     [HttpGet("GetSensorByName")]
@@ -31,11 +31,11 @@ public class SensorsController(ISensorOperationsService sensorService) : Control
     }
 
     [HttpPut("UpdateSensor")]
-    public async Task<ActionResult> UpdateSensorAsync(Guid sensorId, SensorDto sensorDto, string endUserId)
+    public async Task<ActionResult> UpdateSensorAsync(Guid sensorId, SensorRequestDto sensorRequestDto, string endUserId)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        return Ok(await sensorService.UpdateSensorAsync(sensorId, sensorDto, endUserId));
+        return Ok(await sensorService.UpdateSensorAsync(sensorId, sensorRequestDto, endUserId));
     }
 
     [HttpDelete("DeleteSensor")]

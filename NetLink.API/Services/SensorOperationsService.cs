@@ -1,36 +1,36 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using NetLink.API.Data;
+using NetLink.API.DTOs.Request;
+using NetLink.API.DTOs.Response;
 using NetLink.API.Exceptions;
 using NetLink.API.Models;
-using NetLink.API.Shared;
-using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Services;
 
 public interface ISensorOperationsService
 {
-    Task<Guid> AddSensorAsync(SensorDto sensorDto, string endUserId);
-    Task<SensorRes> GetSensorByNameAsync(string deviceName, string endUserId);
-    Task<SensorRes> GetSensorByIdAsync(Guid sensorId, string endUserId);
-    Task<SensorRes> UpdateSensorAsync(Guid sensorId, SensorDto sensorDto, string endUserId);
+    Task<Guid> AddSensorAsync(SensorRequestDto sensorRequestDto, string endUserId);
+    Task<SensorResponseDto> GetSensorByNameAsync(string deviceName, string endUserId);
+    Task<SensorResponseDto> GetSensorByIdAsync(Guid sensorId, string endUserId);
+    Task<SensorResponseDto> UpdateSensorAsync(Guid sensorId, SensorRequestDto sensorRequestDto, string endUserId);
     Task DeleteSensorAsync(Guid sensorId, string endUserId);
-    Task<Guid> AddRecordedValueAsync(RecordedValueDto recordedValueDto, string sensorName, string endUserId);
+    Task<Guid> AddRecordedValueAsync(RecordedValueRequestDto recordedValueRequestDto, string sensorName, string endUserId);
 }
 
 public class SensorOperationsService(IMapper mapper, NetLinkDbContext dbContext, IEndUserService endUserService)
     : ISensorOperationsService
 {
-    public async Task<Guid> AddSensorAsync(SensorDto sensorDto, string endUserId)
+    public async Task<Guid> AddSensorAsync(SensorRequestDto sensorRequestDto, string endUserId)
     {
         await endUserService.ValidateEndUserAsync(endUserId);
 
-        if (await DoesSensorExistAsync(sensorDto.DeviceName!, endUserId))
+        if (await DoesSensorExistAsync(sensorRequestDto.DeviceName!, endUserId))
         {
             throw new SensorException("Device with this name already exists, please choose another name.");
         }
 
-        var sensor = mapper.Map<Sensor>(sensorDto);
+        var sensor = mapper.Map<Sensor>(sensorRequestDto);
         dbContext.Sensors.Add(sensor);
 
         var endUserSensor = new EndUserSensor
@@ -44,20 +44,20 @@ public class SensorOperationsService(IMapper mapper, NetLinkDbContext dbContext,
         return sensor.Id;
     }
 
-    public async Task<SensorRes> GetSensorByIdAsync(Guid sensorId, string endUserId)
+    public async Task<SensorResponseDto> GetSensorByIdAsync(Guid sensorId, string endUserId)
     {
         var sensor = await FindSensorByIdAsync(sensorId, endUserId);
-        return mapper.Map<SensorRes>(sensor);
+        return mapper.Map<SensorResponseDto>(sensor);
     }
 
-    public async Task<SensorRes> UpdateSensorAsync(Guid sensorId, SensorDto sensorDto, string endUserId)
+    public async Task<SensorResponseDto> UpdateSensorAsync(Guid sensorId, SensorRequestDto sensorRequestDto, string endUserId)
     {
         var sensor = await FindSensorByIdAsync(sensorId, endUserId);
 
-        mapper.Map(sensorDto, sensor);
+        mapper.Map(sensorRequestDto, sensor);
         await dbContext.SaveChangesAsync();
 
-        return mapper.Map<SensorRes>(sensor);
+        return mapper.Map<SensorResponseDto>(sensor);
     }
 
     public async Task DeleteSensorAsync(Guid sensorId, string endUserId)
@@ -67,12 +67,12 @@ public class SensorOperationsService(IMapper mapper, NetLinkDbContext dbContext,
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task<Guid> AddRecordedValueAsync(RecordedValueDto recordedValueDto, string sensorName,
+    public async Task<Guid> AddRecordedValueAsync(RecordedValueRequestDto recordedValueRequestDto, string sensorName,
         string endUserId)
     {
         var sensorId = await GetSensorIdByNameAsync(sensorName, endUserId);
 
-        var recordedValue = mapper.Map<RecordedValue>(recordedValueDto);
+        var recordedValue = mapper.Map<RecordedValue>(recordedValueRequestDto);
         recordedValue.SensorId = sensorId;
 
         dbContext.RecordedValues.Add(recordedValue);
@@ -81,7 +81,7 @@ public class SensorOperationsService(IMapper mapper, NetLinkDbContext dbContext,
         return recordedValue.Id;
     }
 
-    public async Task<SensorRes> GetSensorByNameAsync(string deviceName, string endUserId)
+    public async Task<SensorResponseDto> GetSensorByNameAsync(string deviceName, string endUserId)
     {
         await endUserService.ValidateEndUserAsync(endUserId);
 
@@ -93,7 +93,7 @@ public class SensorOperationsService(IMapper mapper, NetLinkDbContext dbContext,
         if (sensor == null)
             throw new NotFoundException("Sensor not found.");
 
-        return mapper.Map<SensorRes>(sensor);
+        return mapper.Map<SensorResponseDto>(sensor);
     }
 
     private async Task<Sensor> FindSensorByIdAsync(Guid sensorId, string endUserId)

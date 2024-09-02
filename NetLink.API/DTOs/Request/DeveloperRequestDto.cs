@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace NetLink.API.Shared.DTOs;
+namespace NetLink.API.DTOs.Request;
 
-public class DeveloperDto
+public class DeveloperRequestDto
 {
     [Required]
     public string? Username { get; init; }

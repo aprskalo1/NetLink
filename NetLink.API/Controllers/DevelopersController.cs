@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NetLink.API.DTOs.Request;
 using NetLink.API.Services;
-using NetLink.API.Shared.DTOs;
 
 namespace NetLink.API.Controllers;
 
@@ -11,11 +11,11 @@ namespace NetLink.API.Controllers;
 public class DevelopersController(IDeveloperService developerService) : ControllerBase
 {
     [HttpPost("AddDeveloper")]
-    public async Task<ActionResult> AddDeveloperAsync(DeveloperDto developerDto)
+    public async Task<ActionResult> AddDeveloperAsync(DeveloperRequestDto developerRequestDto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        return Ok(await developerService.AddDeveloperAsync(developerDto));
+        return Ok(await developerService.AddDeveloperAsync(developerRequestDto));
     }
 
     [HttpGet("GetDeveloperIdFromToken")]
@@ -37,11 +37,11 @@ public class DevelopersController(IDeveloperService developerService) : Controll
     }
 
     [HttpPut("UpdateDeveloper")]
-    public async Task<IActionResult> UpdateDeveloperAsync(Guid developerId, DeveloperDto developerDto)
+    public async Task<IActionResult> UpdateDeveloperAsync(Guid developerId, DeveloperRequestDto developerRequestDto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        return Ok(await developerService.UpdateDeveloperAsync(developerId, developerDto));
+        return Ok(await developerService.UpdateDeveloperAsync(developerId, developerRequestDto));
     }
 
     [HttpPatch("DeactivateDeveloper")]

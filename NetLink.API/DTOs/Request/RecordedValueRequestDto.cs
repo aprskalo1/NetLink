@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace NetLink.API.Shared.DTOs;
+namespace NetLink.API.DTOs.Request;
 
-public class RecordedValueDto
+public class RecordedValueRequestDto
 {
     [Required] 
     public string? Value { get; init; }

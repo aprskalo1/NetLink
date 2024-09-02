@@ -1,7 +1,10 @@
-﻿namespace NetLink.API.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace NetLink.API.Models;
 
 public class EndUserSensorGroup
 {
+    [Key]
     public Guid Id { get; init; }
 
     public string? EndUserId { get; init; }

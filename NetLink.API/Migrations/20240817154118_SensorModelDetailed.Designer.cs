@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetLink.API.Data;
 
@@ -11,9 +12,11 @@ using NetLink.API.Data;
 namespace NetLink.API.Migrations
 {
     [DbContext(typeof(NetLinkDbContext))]
-    partial class NetLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240817154118_SensorModelDetailed")]
+    partial class SensorModelDetailed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,7 +206,7 @@ namespace NetLink.API.Migrations
                     b.Property<string>("GroupName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("SensorId")
+                    b.Property<Guid>("SensorId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -281,7 +284,9 @@ namespace NetLink.API.Migrations
                 {
                     b.HasOne("NetLink.API.Models.Sensor", "Sensor")
                         .WithMany()
-                        .HasForeignKey("SensorId");
+                        .HasForeignKey("SensorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Sensor");
                 });

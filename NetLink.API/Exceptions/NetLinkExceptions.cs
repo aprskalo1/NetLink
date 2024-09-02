@@ -24,6 +24,14 @@ internal class SensorException(string message) : NetLinkCustomException(message)
     }
 }
 
+internal class SensorGroupException(string message) : NetLinkCustomException(message)
+{
+    public override string ToString()
+    {
+        return $"SensorGroupException: {Message}";
+    }
+}
+
 internal class NotFoundException(string message) : NetLinkCustomException(message)
 {
     public override string ToString()
