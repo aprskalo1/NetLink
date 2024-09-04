@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using NetLink.API.Data;
 using NetLink.API.Exceptions;
 using NetLink.API.Mapping;
+using NetLink.API.Repositories;
 using NetLink.API.Services;
 using NetLink.API.Services.Auth;
 
@@ -75,10 +76,14 @@ builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
+builder.Services.AddScoped<IGroupRepository, GroupRepository>();
+builder.Services.AddScoped<IDeveloperRepository, DeveloperRepository>();
+
 builder.Services.AddScoped<ISensorOperationsService, SensorOperationsService>();
 builder.Services.AddScoped<IDeveloperService, DeveloperService>();
 builder.Services.AddScoped<IEndUserService, EndUserService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IGroupingService, GroupingService>();
 
 var app = builder.Build();
 

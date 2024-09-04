@@ -2,12 +2,12 @@
 
 namespace NetLink.API.Models;
 
-public class EndUserSensor
+public class EndUserGroup
 {
-    public Guid Id { get; init; }
+    [Key] public Guid Id { get; init; }
     [MaxLength(450)] public string? EndUserId { get; init; }
     public EndUser? EndUser { get; init; }
     public DateTime CreatedAt { get; init; } = DateTime.Now;
-    public Guid SensorId { get; init; }
-    public Sensor? Sensor { get; init; }
+    public Guid GroupId { get; init; }
+    public Group Group { get; init; }
 }

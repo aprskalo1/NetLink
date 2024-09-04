@@ -1,11 +1,10 @@
 ﻿using System.Security.Cryptography;
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using NetLink.API.Data;
 using NetLink.API.DTOs.Request;
 using NetLink.API.DTOs.Response;
 using NetLink.API.Exceptions;
 using NetLink.API.Models;
+using NetLink.API.Repositories;
 
 namespace NetLink.API.Services;
 
@@ -25,135 +24,116 @@ public interface IDeveloperService
     Task<List<DeveloperResponseDto>> ListDevelopersAsync(); //TODO: Add pagination, filtering, and sorting
 }
 
-public class DeveloperService(IMapper mapper, NetLinkDbContext dbContext) : IDeveloperService
+public class DeveloperService(IMapper mapper, IDeveloperRepository developerRepository) : IDeveloperService
 {
     public async Task<Guid> AddDeveloperAsync(DeveloperRequestDto developerRequestDto)
     {
-        await CheckIfDeveloperExistsAsync(developerRequestDto.Username!);
+        if (await developerRepository.CheckIfDeveloperExistsAsync(developerRequestDto.Username!))
+        {
+            throw new DeveloperException("Developer with this username already exists.");
+        }
 
         var developer = mapper.Map<Developer>(developerRequestDto);
         developer.DevToken = GenerateDevToken();
-        dbContext.Developers.Add(developer);
-        await dbContext.SaveChangesAsync();
+
+        await developerRepository.AddDeveloperAsync(developer);
+        await developerRepository.SaveChangesAsync();
 
         return developer.Id;
     }
 
     public async Task ValidateDeveloperAsync(string devToken)
     {
-        var developer = await dbContext.Developers.FirstOrDefaultAsync(d => d.DevToken == devToken);
-
-        if (developer == null)
-            throw new NotFoundException(
-                "Developer with this token does not exist or DevToken is invalid. Please check your DevToken in the configuration file.");
+        var developer = await developerRepository.GetDeveloperByTokenAsync(devToken);
 
         if (!developer.Active)
-            throw new DeveloperException("Developer account is deactivated. Please contact support.");
+        {
+            throw new DeveloperException("Developer account is deactivated.");
+        }
 
         if (developer.DeletedAt != null)
-            throw new DeveloperException("Developer account has been deleted. If you think this is a mistake, please contact support.");
+        {
+            throw new DeveloperException("Developer account has been deleted.");
+        }
     }
 
     public async Task<Guid> GetDeveloperIdFromTokenAsync(string devToken)
     {
-        var developer = await dbContext.Developers.FirstOrDefaultAsync(d => d.DevToken == devToken);
-
-        if (developer == null)
-            throw new DeveloperException(
-                "Developer with this token does not exist or DevToken is invalid. Please check your DevToken in the configuration file.");
-
+        var developer = await developerRepository.GetDeveloperByTokenAsync(devToken);
         return developer.Id;
     }
 
     public async Task<DeveloperResponseDto> GetDeveloperByIdAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(developerId);
+        var developer = await developerRepository.GetDeveloperByIdAsync(developerId);
+
         return mapper.Map<DeveloperResponseDto>(developer);
     }
 
-    public async Task<DeveloperResponseDto> GetDeveloperByUsernameAsync(string username) =>
-        await dbContext.Developers.FirstOrDefaultAsync(d => d.Username == username) is { } developer
-            ? mapper.Map<DeveloperResponseDto>(developer)
-            : throw new NotFoundException("Developer with this username does not exist.");
+    public async Task<DeveloperResponseDto> GetDeveloperByUsernameAsync(string username)
+    {
+        var developer = await developerRepository.GetDeveloperByUsernameAsync(username);
+        return mapper.Map<DeveloperResponseDto>(developer);
+    }
 
     public async Task<DeveloperResponseDto> UpdateDeveloperAsync(Guid developerId, DeveloperRequestDto developerRequestDto)
     {
-        var developer = await FindDeveloperByIdAsync(developerId);
+        var developer = await developerRepository.GetDeveloperByIdAsync(developerId);
 
         mapper.Map(developerRequestDto, developer);
-        await dbContext.SaveChangesAsync();
+        await developerRepository.UpdateDeveloperAsync(developer);
 
         return mapper.Map<DeveloperResponseDto>(developer);
     }
 
     public async Task DeactivateDeveloperAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(developerId);
+        var developer = await developerRepository.GetDeveloperByIdAsync(developerId);
         developer.Active = false;
-        await dbContext.SaveChangesAsync();
+        await developerRepository.SaveChangesAsync();
     }
 
     public async Task ReactivateDeveloperAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(developerId);
+        var developer = await developerRepository.GetDeveloperByIdAsync(developerId);
         developer.Active = true;
-        await dbContext.SaveChangesAsync();
+        await developerRepository.SaveChangesAsync();
     }
 
     public async Task SoftDeleteDeveloperAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(developerId);
+        var developer = await developerRepository.GetDeveloperByIdAsync(developerId);
         developer.DeletedAt = DateTime.Now;
-        await dbContext.SaveChangesAsync();
+        await developerRepository.SaveChangesAsync();
     }
 
     public async Task RestoreDeveloperAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(developerId);
+        var developer = await developerRepository.GetDeveloperByIdAsync(developerId);
         developer.DeletedAt = null;
-        await dbContext.SaveChangesAsync();
+        await developerRepository.SaveChangesAsync();
     }
 
     public async Task DeleteDeveloperAsync(Guid developerId)
     {
-        var developer = await FindDeveloperByIdAsync(developerId);
-        dbContext.Developers.Remove(developer);
-        await dbContext.SaveChangesAsync();
+        var developer = await developerRepository.GetDeveloperByIdAsync(developerId);
+        await developerRepository.DeleteDeveloperAsync(developer);
+        await developerRepository.SaveChangesAsync();
     }
 
-    public Task<List<DeveloperResponseDto>> ListDevelopersAsync()
+    public async Task<List<DeveloperResponseDto>> ListDevelopersAsync()
     {
-        return dbContext.Developers
-            .Select(d => mapper.Map<DeveloperResponseDto>(d))
-            .ToListAsync();
-    }
-
-    private async Task<Developer> FindDeveloperByIdAsync(Guid id)
-    {
-        var developer = await dbContext.Developers.FirstOrDefaultAsync(d => d.Id == id);
-
-        if (developer == null)
-            throw new NotFoundException("Developer with this Id does not exist.");
-
-        return developer;
-    }
-
-    private async Task CheckIfDeveloperExistsAsync(string username)
-    {
-        if (await dbContext.Developers.AnyAsync(d => d.Username == username))
-            throw new DeveloperException("Developer with this username already exists. Please use another account.");
+        var developers = await developerRepository.ListDevelopersAsync();
+        return mapper.Map<List<DeveloperResponseDto>>(developers);
     }
 
     private static string GenerateDevToken()
     {
         const string prefix = "NL";
-
         var randomBytes = new byte[64];
         RandomNumberGenerator.Fill(randomBytes);
-
-        var base64String = Convert.ToBase64String(randomBytes);
-
-        base64String = base64String.Replace("+", "")
+        var base64String = Convert.ToBase64String(randomBytes)
+            .Replace("+", "")
             .Replace("/", "")
             .Replace("=", "");
 

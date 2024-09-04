@@ -1,5 +1,6 @@
 using AutoMapper;
 using NetLink.API.DTOs.Request;
+using NetLink.API.DTOs.Response;
 using NetLink.API.Exceptions;
 using NetLink.API.Models;
 using NetLink.API.Repositories;
@@ -8,50 +9,118 @@ namespace NetLink.API.Services;
 
 public interface IGroupingService
 {
-    Task<Guid> CreateGroupAsync(SensorGroupRequestDto groupDto, string endUserId);
+    Task<Guid> CreateGroupAsync(GroupRequestDto groupDto, string endUserId);
     Task DeleteGroupAsync(Guid groupId, string endUserId);
     Task AddSensorToGroupAsync(Guid groupId, Guid sensorId, string endUserId);
     Task RemoveSensorFromGroupAsync(Guid groupId, Guid sensorId, string endUserId);
+    Task<List<GroupResponseDto>> GetEndUserGroupsAsync(string endUserId);
+    Task<GroupResponseDto> GetGroupByIdAsync(Guid groupId, string endUserId);
+    Task UpdateGroupAsync(GroupRequestDto groupDto, Guid groupId, string endUserId);
 }
 
-public class GroupingService(IEndUserService endUserService, IMapper mapper, ISensorGroupRepository sensorGroupRepository) : IGroupingService
+public class GroupingService(IEndUserService endUserService, IMapper mapper, IGroupRepository groupRepository) : IGroupingService
 {
-    public async Task<Guid> CreateGroupAsync(SensorGroupRequestDto groupDto, string endUserId)
+    public async Task<Guid> CreateGroupAsync(GroupRequestDto groupDto, string endUserId)
     {
         await endUserService.ValidateEndUserAsync(endUserId);
 
-        if (await sensorGroupRepository.GroupNameExistsAsync(groupDto.GroupName!, endUserId))
-        {
-            throw new SensorGroupException("Group name already exists");
-        }
+        var group = mapper.Map<Group>(groupDto);
+        await groupRepository.AddGroupAsync(group);
 
-        var group = mapper.Map<SensorGroup>(groupDto);
-
-        var endUserSensorGroup = new EndUserSensorGroup
+        var endUserGroup = new EndUserGroup
         {
             EndUserId = endUserId,
-            SensorGroupId = group.Id
+            GroupId = group.Id
         };
 
-        await sensorGroupRepository.AddGroupAsync(group);
-        await sensorGroupRepository.AddEndUserSensorGroupAsync(endUserSensorGroup);
-        await sensorGroupRepository.SaveChangesAsync();
+        await groupRepository.AddEndUserGroupAsync(endUserGroup);
+        await groupRepository.SaveChangesAsync();
 
         return group.Id;
     }
 
-    public Task DeleteGroupAsync(Guid groupId, string endUserId)
+    public async Task DeleteGroupAsync(Guid groupId, string endUserId)
     {
-        throw new NotImplementedException();
+        await endUserService.ValidateEndUserAsync(endUserId);
+        await groupRepository.ValidateUserGroupAsync(endUserId, groupId);
+
+        var group = await groupRepository.GetGroupByIdAsync(groupId);
+
+        if (group == null)
+            throw new NotFoundException("Group not found.");
+
+        await groupRepository.DeleteGroupAsync(group);
     }
 
-    public Task AddSensorToGroupAsync(Guid groupId, Guid sensorId, string endUserId)
+    public async Task AddSensorToGroupAsync(Guid groupId, Guid sensorId, string endUserId)
     {
-        throw new NotImplementedException();
+        await endUserService.ValidateEndUserAsync(endUserId);
+
+        //TODO: Check if sensor belongs to the end user and if exists
+
+        var group = await groupRepository.GetGroupByIdAsync(groupId);
+        if (group == null)
+            throw new NotFoundException("Group not found.");
+
+        var existingSensorGroup = await groupRepository.GetSensorGroupAsync(groupId, sensorId);
+        if (existingSensorGroup != null)
+            throw new SensorGroupException("Sensor already exists in group.");
+
+        var sensorGroup = new SensorGroup
+        {
+            SensorId = sensorId,
+            GroupId = groupId
+        };
+
+        await groupRepository.AddSensorGroupAsync(sensorGroup);
+        await groupRepository.SaveChangesAsync();
     }
 
-    public Task RemoveSensorFromGroupAsync(Guid groupId, Guid sensorId, string endUserId)
+    public async Task RemoveSensorFromGroupAsync(Guid groupId, Guid sensorId, string endUserId)
     {
-        throw new NotImplementedException();
+        await endUserService.ValidateEndUserAsync(endUserId);
+
+        //TODO: Check if sensor belongs to the end user and if exists
+
+        var sensorGroup = await groupRepository.GetSensorGroupAsync(groupId, sensorId);
+
+        if (sensorGroup == null)
+            throw new NotFoundException("Sensor not found in group.");
+
+        await groupRepository.RemoveSensorGroupAsync(sensorGroup);
+    }
+
+    public async Task<List<GroupResponseDto>> GetEndUserGroupsAsync(string endUserId)
+    {
+        await endUserService.ValidateEndUserAsync(endUserId);
+
+        var groups = await groupRepository.FindEndUserGroupsAsync(endUserId);
+        return mapper.Map<List<GroupResponseDto>>(groups);
+    }
+
+    public async Task<GroupResponseDto> GetGroupByIdAsync(Guid groupId, string endUserId)
+    {
+        await endUserService.ValidateEndUserAsync(endUserId);
+        await groupRepository.ValidateUserGroupAsync(endUserId, groupId);
+
+        var group = await groupRepository.GetGroupByIdAsync(groupId);
+        if (group == null)
+            throw new NotFoundException("Group not found.");
+
+        return mapper.Map<GroupResponseDto>(group);
+    }
+
+    public async Task UpdateGroupAsync(GroupRequestDto groupDto, Guid groupId, string endUserId)
+    {
+        await endUserService.ValidateEndUserAsync(endUserId);
+        await groupRepository.ValidateUserGroupAsync(endUserId, groupId);
+
+        var existingGroup = await groupRepository.GetGroupByIdAsync(groupId);
+
+        if (existingGroup == null)
+            throw new NotFoundException("Group not found.");
+
+        var group = mapper.Map(groupDto, existingGroup);
+        await groupRepository.UpdateGroupAsync(group);
     }
 }

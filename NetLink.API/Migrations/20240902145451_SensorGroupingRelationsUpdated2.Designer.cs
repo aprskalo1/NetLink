@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetLink.API.Data;
 
@@ -11,9 +12,11 @@ using NetLink.API.Data;
 namespace NetLink.API.Migrations
 {
     [DbContext(typeof(NetLinkDbContext))]
-    partial class NetLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240902145451_SensorGroupingRelationsUpdated2")]
+    partial class SensorGroupingRelationsUpdated2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -96,31 +99,6 @@ namespace NetLink.API.Migrations
                     b.ToTable("EndUsers");
                 });
 
-            modelBuilder.Entity("NetLink.API.Models.EndUserGroup", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("EndUserId")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EndUserId");
-
-                    b.HasIndex("GroupId");
-
-                    b.ToTable("EndUserGroups");
-                });
-
             modelBuilder.Entity("NetLink.API.Models.EndUserSensor", b =>
                 {
                     b.Property<Guid>("Id")
@@ -146,7 +124,7 @@ namespace NetLink.API.Migrations
                     b.ToTable("EndUserSensors");
                 });
 
-            modelBuilder.Entity("NetLink.API.Models.Group", b =>
+            modelBuilder.Entity("NetLink.API.Models.EndUserSensorGroup", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -155,13 +133,20 @@ namespace NetLink.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("GroupName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<string>("EndUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("SensorGroupId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Groups");
+                    b.HasIndex("EndUserId");
+
+                    b.HasIndex("SensorGroupId");
+
+                    b.ToTable("EndUserSensorGroups");
                 });
 
             modelBuilder.Entity("NetLink.API.Models.RecordedValue", b =>
@@ -216,7 +201,12 @@ namespace NetLink.API.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<Guid>("SensorGroupId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("SensorGroupId");
 
                     b.ToTable("Sensors");
                 });
@@ -230,17 +220,14 @@ namespace NetLink.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("GroupName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<Guid>("SensorId")
+                    b.Property<Guid?>("SensorId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("SensorId");
 
                     b.ToTable("SensorGroups");
                 });
@@ -248,13 +235,13 @@ namespace NetLink.API.Migrations
             modelBuilder.Entity("NetLink.API.Models.DeveloperUser", b =>
                 {
                     b.HasOne("NetLink.API.Models.Developer", "Developer")
-                        .WithMany()
+                        .WithMany("DeveloperUsers")
                         .HasForeignKey("DeveloperId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("NetLink.API.Models.EndUser", "EndUser")
-                        .WithMany()
+                        .WithMany("DeveloperUsers")
                         .HasForeignKey("EndUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -264,31 +251,14 @@ namespace NetLink.API.Migrations
                     b.Navigation("EndUser");
                 });
 
-            modelBuilder.Entity("NetLink.API.Models.EndUserGroup", b =>
-                {
-                    b.HasOne("NetLink.API.Models.EndUser", "EndUser")
-                        .WithMany()
-                        .HasForeignKey("EndUserId");
-
-                    b.HasOne("NetLink.API.Models.Group", "SensorGroup")
-                        .WithMany("EndUserSensorGroups")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("EndUser");
-
-                    b.Navigation("SensorGroup");
-                });
-
             modelBuilder.Entity("NetLink.API.Models.EndUserSensor", b =>
                 {
                     b.HasOne("NetLink.API.Models.EndUser", "EndUser")
-                        .WithMany()
+                        .WithMany("EndUserSensors")
                         .HasForeignKey("EndUserId");
 
                     b.HasOne("NetLink.API.Models.Sensor", "Sensor")
-                        .WithMany()
+                        .WithMany("EndUserSensors")
                         .HasForeignKey("SensorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -296,6 +266,23 @@ namespace NetLink.API.Migrations
                     b.Navigation("EndUser");
 
                     b.Navigation("Sensor");
+                });
+
+            modelBuilder.Entity("NetLink.API.Models.EndUserSensorGroup", b =>
+                {
+                    b.HasOne("NetLink.API.Models.EndUser", "EndUser")
+                        .WithMany("EndUserSensorGroups")
+                        .HasForeignKey("EndUserId");
+
+                    b.HasOne("NetLink.API.Models.SensorGroup", "SensorGroup")
+                        .WithMany("EndUserSensorGroups")
+                        .HasForeignKey("SensorGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EndUser");
+
+                    b.Navigation("SensorGroup");
                 });
 
             modelBuilder.Entity("NetLink.API.Models.RecordedValue", b =>
@@ -309,35 +296,41 @@ namespace NetLink.API.Migrations
                     b.Navigation("Sensor");
                 });
 
-            modelBuilder.Entity("NetLink.API.Models.SensorGroup", b =>
+            modelBuilder.Entity("NetLink.API.Models.Sensor", b =>
                 {
-                    b.HasOne("NetLink.API.Models.Group", "Group")
-                        .WithMany("SensorGroups")
-                        .HasForeignKey("GroupId")
+                    b.HasOne("NetLink.API.Models.SensorGroup", "SensorGroup")
+                        .WithMany("Sensors")
+                        .HasForeignKey("SensorGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("NetLink.API.Models.Sensor", "Sensor")
-                        .WithMany("SensorGroups")
-                        .HasForeignKey("SensorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Group");
-
-                    b.Navigation("Sensor");
+                    b.Navigation("SensorGroup");
                 });
 
-            modelBuilder.Entity("NetLink.API.Models.Group", b =>
+            modelBuilder.Entity("NetLink.API.Models.Developer", b =>
                 {
+                    b.Navigation("DeveloperUsers");
+                });
+
+            modelBuilder.Entity("NetLink.API.Models.EndUser", b =>
+                {
+                    b.Navigation("DeveloperUsers");
+
                     b.Navigation("EndUserSensorGroups");
 
-                    b.Navigation("SensorGroups");
+                    b.Navigation("EndUserSensors");
                 });
 
             modelBuilder.Entity("NetLink.API.Models.Sensor", b =>
                 {
-                    b.Navigation("SensorGroups");
+                    b.Navigation("EndUserSensors");
+                });
+
+            modelBuilder.Entity("NetLink.API.Models.SensorGroup", b =>
+                {
+                    b.Navigation("EndUserSensorGroups");
+
+                    b.Navigation("Sensors");
                 });
 #pragma warning restore 612, 618
         }

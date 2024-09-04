@@ -30,7 +30,10 @@ public class AutoMapperProfile : Profile
         CreateMap<EndUserResponseDto, EndUser>();
         CreateMap<EndUser, EndUserResponseDto>();
 
-        CreateMap<SensorGroupRequestDto, SensorGroup>();
-        CreateMap<SensorGroup, SensorGroupRequestDto>();
+        CreateMap<GroupRequestDto, Group>();
+        CreateMap<Group, GroupRequestDto>();
+        
+        CreateMap<GroupResponseDto, Group>();
+        CreateMap<Group, GroupResponseDto>();
     }
 }

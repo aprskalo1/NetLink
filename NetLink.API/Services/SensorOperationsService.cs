@@ -111,10 +111,8 @@ public class SensorOperationsService(IMapper mapper, NetLinkDbContext dbContext,
         return sensor;
     }
 
-    private async Task<bool> DoesSensorExistAsync(string sensorName, string endUserId)
+    private async Task<bool> DoesSensorExistAsync(string? sensorName, string endUserId)
     {
-        await endUserService.ValidateEndUserAsync(endUserId);
-
         var existingSensor = await dbContext.EndUserSensors
             .Include(e => e.Sensor)
             .FirstOrDefaultAsync(e => e.Sensor!.DeviceName == sensorName && e.EndUserId == endUserId);

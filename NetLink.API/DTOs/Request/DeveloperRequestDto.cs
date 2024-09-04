@@ -4,6 +4,5 @@ namespace NetLink.API.DTOs.Request;
 
 public class DeveloperRequestDto
 {
-    [Required]
-    public string? Username { get; init; }
+    [Required] [MaxLength(50)] public string? Username { get; init; }
 }

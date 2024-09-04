@@ -4,16 +4,9 @@ namespace NetLink.API.DTOs.Request;
 
 public class SensorRequestDto
 {
-    [Required]
-    public string? DeviceName { get; init; }
-    
-    [Required]
-    public string? DeviceType { get; init; }
-    
-    [Required]
-    public string? MeasurementUnit { get; init; }
-    
-    public string? DeviceLocation { get; init; }
-    
-    public string? DeviceDescription { get; init; }
+    [Required] [MaxLength(50)] public string? DeviceName { get; init; }
+    [Required] [MaxLength(50)] public string? DeviceType { get; init; }
+    [Required] [MaxLength(50)] public string? MeasurementUnit { get; init; }
+    [MaxLength(150)] public string? DeviceLocation { get; init; }
+    [MaxLength(450)] public string? DeviceDescription { get; init; }
 }
