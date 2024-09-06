@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using NetLink.API.Data;
-using NetLink.API.DTOs.Response;
 using NetLink.API.Exceptions;
 using NetLink.API.Models;
 
@@ -63,7 +62,7 @@ public class GroupRepository(NetLinkDbContext dbContext) : IGroupRepository
 
     public async Task<SensorGroup> GetSensorGroupAsync(Guid groupId, Guid sensorId)
     {
-        return (await dbContext.SensorGroups.FirstOrDefaultAsync(x => x!.GroupId == groupId && x.SensorId == sensorId))!;
+        return (await dbContext.SensorGroups.FirstOrDefaultAsync(x => x.GroupId == groupId && x.SensorId == sensorId))!;
     }
 
     public async Task ValidateUserGroupAsync(string endUserId, Guid groupId)
