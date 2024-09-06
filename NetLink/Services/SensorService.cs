@@ -1,7 +1,5 @@
-﻿using System.Net.Http.Json;
-using NetLink.Helpers;
+﻿using NetLink.Helpers;
 using NetLink.Models;
-using NetLink.Models.DTOs;
 using NetLink.Session;
 using NetLink.Utilities;
 
@@ -21,8 +19,6 @@ internal class SensorService(
     IDeveloperSessionManager developerSessionManager
 ) : HttpHelper(developerSessionManager), ISensorService
 {
-    private readonly IDeveloperSessionManager _developerSessionManager1 = developerSessionManager;
-
     public async Task<Guid> AddSensorAsync(Sensor sensor)
     {
         var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.AddSensorUrl, endUserSessionManager.GetLoggedEndUserId())}";

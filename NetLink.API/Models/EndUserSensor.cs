@@ -9,5 +9,5 @@ public class EndUserSensor
     public EndUser? EndUser { get; init; }
     public DateTime CreatedAt { get; init; } = DateTime.Now;
     public Guid SensorId { get; init; }
-    public Sensor? Sensor { get; init; }
+    public Sensor Sensor { get; init; }
 }

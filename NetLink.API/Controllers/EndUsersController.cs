@@ -20,9 +20,9 @@ public class EndUsersController(IEndUserService endUserService) : ControllerBase
     }
 
     [HttpGet("GetEndUserById")]
-    public async Task<ActionResult<EndUserResponseDto>> GetEndUserByIdAsync(string endUserId)
+    public async Task<ActionResult<EndUserResponseDto>> GetEndUserByIdAsync(string endUserId, string devToken)
     {
-        return Ok(await endUserService.GetEndUserByIdAsync(endUserId));
+        return Ok(await endUserService.GetEndUserByIdAsync(endUserId, devToken));
     }
 
     [HttpGet("ValidateEndUser")]
@@ -71,5 +71,11 @@ public class EndUsersController(IEndUserService endUserService) : ControllerBase
     {
         await endUserService.AssignSensorsToEndUserAsync(sensorIds, endUserId);
         return Ok();
+    }
+
+    [HttpGet("ListEndUserSensors")]
+    public async Task<ActionResult<List<SensorResponseDto>>> ListEndUserSensorsAsync(string endUserId)
+    {
+        return Ok(await endUserService.ListEndUserSensorsAsync(endUserId));
     }
 }

@@ -30,7 +30,7 @@ public class DeveloperService(IMapper mapper, IDeveloperRepository developerRepo
     {
         if (await developerRepository.CheckIfDeveloperExistsAsync(developerRequestDto.Username!))
         {
-            throw new DeveloperException("Developer with this username already exists.");
+            throw new DeveloperException($"Developer with username: {developerRequestDto.Username} already exists.");
         }
 
         var developer = mapper.Map<Developer>(developerRequestDto);
@@ -48,12 +48,12 @@ public class DeveloperService(IMapper mapper, IDeveloperRepository developerRepo
 
         if (!developer.Active)
         {
-            throw new DeveloperException("Developer account is deactivated.");
+            throw new DeveloperException($"Developer account with devToken: {devToken} is deactivated.");
         }
 
         if (developer.DeletedAt != null)
         {
-            throw new DeveloperException("Developer account has been deleted.");
+            throw new DeveloperException($"Developer account with devToken: {devToken} has been deleted.");
         }
     }
 

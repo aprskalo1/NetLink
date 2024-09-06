@@ -1,7 +1,5 @@
-using System.Net.Http.Json;
 using NetLink.Helpers;
 using NetLink.Models;
-using NetLink.Models.DTOs;
 using NetLink.Session;
 using NetLink.Utilities;
 
@@ -18,22 +16,23 @@ public interface IEndUserManagementService
     Task SoftDeleteEndUserAsync(string endUserId);
     Task RestoreEndUserAsync(string endUserId);
     Task AssignSensorsToEndUserAsync(List<Guid> sensorIds, string endUserId);
+    Task<List<Sensor>> ListEndUserSensorsAsync(string endUserId);
 }
 
 internal class EndUserManagementService(IDeveloperSessionManager developerSessionManager) : HttpHelper(developerSessionManager), IEndUserManagementService
 {
-    private readonly IDeveloperSessionManager _developerSessionManager1 = developerSessionManager;
+    private readonly IDeveloperSessionManager _developerSessionManager = developerSessionManager;
 
     public async Task<string> RegisterEndUserAsync(EndUser endUser)
     {
-        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.EndUserRegistrationUrl, _developerSessionManager1.GetDevToken())}";
+        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.EndUserRegistrationUrl, _developerSessionManager.GetDevToken())}";
         var response = await SendRequestAsync<string>(HttpMethod.Post, endpoint, endUser);
         return response ?? string.Empty;
     }
 
     public async Task<EndUser> GetEndUserByIdAsync(string endUserId)
     {
-        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.GetEndUserByIdUrl, endUserId)}";
+        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.GetEndUserByIdUrl, endUserId, _developerSessionManager.GetDevToken())}";
         var response = await SendRequestAsync<EndUser>(HttpMethod.Get, endpoint);
         return response ?? throw new Exception("End user not found.");
     }
@@ -46,7 +45,7 @@ internal class EndUserManagementService(IDeveloperSessionManager developerSessio
 
     public async Task<List<EndUser>> ListDevelopersEndUsersAsync()
     {
-        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.ListDevelopersEndUsersUrl, _developerSessionManager1.GetDevToken())}";
+        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.ListDevelopersEndUsersUrl, _developerSessionManager.GetDevToken())}";
         var response = await SendRequestAsync<List<EndUser>>(HttpMethod.Get, endpoint);
         return response ?? [];
     }
@@ -79,5 +78,12 @@ internal class EndUserManagementService(IDeveloperSessionManager developerSessio
     {
         var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.AssignSensorsToEndUserUrl, endUserId)}";
         await SendRequestAsync(HttpMethod.Post, endpoint, sensorIds);
+    }
+
+    public async Task<List<Sensor>> ListEndUserSensorsAsync(string endUserId)
+    {
+        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.ListEndUserSensorsUrl, endUserId)}";
+        var response = await SendRequestAsync<List<Sensor>>(HttpMethod.Get, endpoint);
+        return response ?? [];
     }
 }

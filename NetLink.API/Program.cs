@@ -36,10 +36,7 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddDbContext<NetLinkDbContext>(options =>
-{
-    options.UseSqlServer("name=ConnectionStrings:DefaultConnection");
-});
+builder.Services.AddDbContext<NetLinkDbContext>(options => { options.UseSqlServer("name=ConnectionStrings:DefaultConnection"); });
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -78,6 +75,8 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IDeveloperRepository, DeveloperRepository>();
+builder.Services.AddScoped<IEndUserRepository, EndUserRepository>();
+builder.Services.AddScoped<ISensorRepository, SensorRepository>();
 
 builder.Services.AddScoped<ISensorOperationsService, SensorOperationsService>();
 builder.Services.AddScoped<IDeveloperService, DeveloperService>();

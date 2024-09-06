@@ -47,7 +47,7 @@ public class GroupingService(IEndUserService endUserService, IMapper mapper, IGr
         var group = await groupRepository.GetGroupByIdAsync(groupId);
 
         if (group == null)
-            throw new NotFoundException("Group not found.");
+            throw new NotFoundException($"Group with ID: {groupId} has not been found.");
 
         await groupRepository.DeleteGroupAsync(group);
     }
@@ -60,11 +60,11 @@ public class GroupingService(IEndUserService endUserService, IMapper mapper, IGr
 
         var group = await groupRepository.GetGroupByIdAsync(groupId);
         if (group == null)
-            throw new NotFoundException("Group not found.");
+            throw new NotFoundException($"Group with ID: {groupId} has not been found.");
 
         var existingSensorGroup = await groupRepository.GetSensorGroupAsync(groupId, sensorId);
         if (existingSensorGroup != null)
-            throw new SensorGroupException("Sensor already exists in group.");
+            throw new SensorGroupException($"Sensor with ID: {sensorId} already exists in group.");
 
         var sensorGroup = new SensorGroup
         {
@@ -85,7 +85,7 @@ public class GroupingService(IEndUserService endUserService, IMapper mapper, IGr
         var sensorGroup = await groupRepository.GetSensorGroupAsync(groupId, sensorId);
 
         if (sensorGroup == null)
-            throw new NotFoundException("Sensor not found in group.");
+            throw new NotFoundException($"Sensor ({sensorId}) has not been found in group ({groupId}).");
 
         await groupRepository.RemoveSensorGroupAsync(sensorGroup);
     }
@@ -105,7 +105,7 @@ public class GroupingService(IEndUserService endUserService, IMapper mapper, IGr
 
         var group = await groupRepository.GetGroupByIdAsync(groupId);
         if (group == null)
-            throw new NotFoundException("Group not found.");
+            throw new NotFoundException($"Group with ID: {groupId} has not been found.");
 
         return mapper.Map<GroupResponseDto>(group);
     }
@@ -118,7 +118,7 @@ public class GroupingService(IEndUserService endUserService, IMapper mapper, IGr
         var existingGroup = await groupRepository.GetGroupByIdAsync(groupId);
 
         if (existingGroup == null)
-            throw new NotFoundException("Group not found.");
+            throw new NotFoundException($"Group with ID: {groupId} has not been found.");
 
         var group = mapper.Map(groupDto, existingGroup);
         await groupRepository.UpdateGroupAsync(group);

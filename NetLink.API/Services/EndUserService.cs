@@ -1,29 +1,29 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using NetLink.API.Data;
 using NetLink.API.DTOs.Request;
 using NetLink.API.DTOs.Response;
 using NetLink.API.Exceptions;
 using NetLink.API.Models;
+using NetLink.API.Repositories;
 
 namespace NetLink.API.Services;
 
 public interface IEndUserService
 {
     Task<string> RegisterEndUserAsync(EndUserRequestDto endUserRequestDto, string devToken);
-    Task<EndUserResponseDto> GetEndUserByIdAsync(string endUserId);
+    Task<EndUserResponseDto> GetEndUserByIdAsync(string endUserId, string devToken);
     Task ValidateEndUserAsync(string endUserId);
     Task<List<EndUserResponseDto>> ListDevelopersEndUsersAsync(string devToken); //TODO: Put this in developer service
     Task DeactivateEndUserAsync(string endUserId);
     Task ReactivateEndUserAsync(string endUserId);
     Task SoftDeleteEndUserAsync(string endUserId);
     Task RestoreEndUserAsync(string endUserId);
-    Task AssignSensorsToEndUserAsync(List<Guid> sensorIds, string endUserId);
+    Task AssignSensorsToEndUserAsync(List<Guid> sensorIds, string endUserId); 
+    Task<List<SensorResponseDto>> ListEndUserSensorsAsync(string endUserId); //TODO: Put this in sensor service
 
-    //Todo: add ListEndUserSensorsAsync
+    //TODO: Add methods to assign and remove groups from end users
 }
 
-public class EndUserService(IMapper mapper, NetLinkDbContext dbContext, IDeveloperService developerService)
+public class EndUserService(IMapper mapper, IDeveloperService developerService, IEndUserRepository endUserRepository)
     : IEndUserService
 {
     public async Task<string> RegisterEndUserAsync(EndUserRequestDto endUserRequestDto, string devToken)
@@ -31,8 +31,10 @@ public class EndUserService(IMapper mapper, NetLinkDbContext dbContext, IDevelop
         var developerId = await developerService.GetDeveloperIdFromTokenAsync(devToken);
         var endUser = mapper.Map<EndUser>(endUserRequestDto);
 
-        if (await ValidateEndUserAssociationAsync(endUserRequestDto.Id!, developerId))
-            throw new EndUserException("EndUser already exists, please use another account.");
+        if (await endUserRepository.ValidateEndUserAssociationAsync(endUserRequestDto.Id!, developerId))
+            throw new EndUserException($"EndUser with ID: {endUserRequestDto.Id} already exists, please use another account.");
+
+        await endUserRepository.AddEndUserAsync(endUser);
 
         var developerUser = new DeveloperUser
         {
@@ -40,78 +42,67 @@ public class EndUserService(IMapper mapper, NetLinkDbContext dbContext, IDevelop
             EndUserId = endUser.Id
         };
 
-        dbContext.EndUsers.Add(endUser);
-        dbContext.DeveloperUsers.Add(developerUser);
-        await dbContext.SaveChangesAsync();
+        await endUserRepository.AddDeveloperUserAsync(developerUser);
+        await endUserRepository.SaveChangesAsync();
 
         return endUser.Id!;
     }
 
-    //TODO: Add devToken or developerId for future use for security reasons
-    public async Task<EndUserResponseDto> GetEndUserByIdAsync(string endUserId)
+    public async Task<EndUserResponseDto> GetEndUserByIdAsync(string endUserId, string devToken)
     {
-        var endUser = await dbContext.EndUsers.FirstOrDefaultAsync(e => e.Id == endUserId);
+        var developerId = await developerService.GetDeveloperIdFromTokenAsync(devToken);
+        if (!await endUserRepository.ValidateEndUserAssociationAsync(endUserId, developerId))
+            throw new EndUserException($"EndUser with ID {endUserId} does not exist or is not associated with the developer.");
 
-        if (endUser == null)
-            throw new NotFoundException("EndUser does not exist.");
-
+        var endUser = await endUserRepository.GetEndUserByIdAsync(endUserId);
         return mapper.Map<EndUserResponseDto>(endUser);
     }
 
-    //TODO: Add devToken or developerId for future use for security reasons
     public async Task ValidateEndUserAsync(string endUserId)
     {
-        var endUser = await dbContext.EndUsers
-            .FirstOrDefaultAsync(e => e.Id == endUserId);
-
-        if (endUser == null)
-            throw new NotFoundException("EndUser does not exist.");
+        var endUser = await endUserRepository.GetEndUserByIdAsync(endUserId);
 
         if (endUser.DeletedAt.HasValue)
-            throw new EndUserException("EndUser account has been deleted.");
+            throw new EndUserException($"EndUser's account with ID {endUserId} has been deleted at {endUser.DeletedAt}.");
 
         if (!endUser.Active)
-            throw new EndUserException("EndUser account is not active.");
+            throw new EndUserException($"EndUser's account with ID {endUserId} is not active.");
     }
 
     public async Task<List<EndUserResponseDto>> ListDevelopersEndUsersAsync(string devToken)
     {
         await developerService.ValidateDeveloperAsync(devToken);
-
-        var developersUsers = await dbContext.DeveloperUsers
-            .Where(du => du.Developer!.DevToken == devToken)
-            .Select(du => mapper.Map<EndUserResponseDto>(du.EndUser))
-            .ToListAsync();
-
-        return developersUsers;
+        var developerId = await developerService.GetDeveloperIdFromTokenAsync(devToken);
+        var endUsers = await endUserRepository.ListDeveloperEndUsersAsync(developerId);
+        return mapper.Map<List<EndUserResponseDto>>(endUsers);
     }
 
     public async Task DeactivateEndUserAsync(string endUserId)
     {
-        var endUser = await FindEndUserByIdAsync(endUserId);
+        var endUser = await endUserRepository.GetEndUserByIdAsync(endUserId);
         endUser.Active = false;
-        await dbContext.SaveChangesAsync();
+        await endUserRepository.SaveChangesAsync();
     }
 
     public async Task ReactivateEndUserAsync(string endUserId)
     {
-        var endUser = await FindEndUserByIdAsync(endUserId);
+        var endUser = await endUserRepository.GetEndUserByIdAsync(endUserId);
         endUser.Active = true;
-        await dbContext.SaveChangesAsync();
+        await endUserRepository.SaveChangesAsync();
     }
 
     public async Task SoftDeleteEndUserAsync(string endUserId)
     {
-        var endUser = await FindEndUserByIdAsync(endUserId);
+        var endUser = await endUserRepository.GetEndUserByIdAsync(endUserId);
         endUser.DeletedAt = DateTime.Now;
-        await dbContext.SaveChangesAsync();
+        await endUserRepository.SaveChangesAsync();
     }
 
     public async Task RestoreEndUserAsync(string endUserId)
     {
-        var endUser = await FindEndUserByIdAsync(endUserId);
+        var endUser = await endUserRepository.GetEndUserByIdAsync(endUserId);
         endUser.DeletedAt = null;
-        await dbContext.SaveChangesAsync();
+        await endUserRepository.SaveChangesAsync();
     }
 
     public async Task AssignSensorsToEndUserAsync(List<Guid> sensorIds, string endUserId)
@@ -119,23 +110,18 @@ public class EndUserService(IMapper mapper, NetLinkDbContext dbContext, IDevelop
         await ValidateEndUserAsync(endUserId);
 
         var endUserSensors = new List<EndUserSensor>();
-        var endUser = await FindEndUserByIdAsync(endUserId);
-        var sensors = await dbContext.Sensors
-            .Where(s => sensorIds.Contains(s.Id))
-            .ToListAsync();
+        var endUser = await endUserRepository.GetEndUserByIdAsync(endUserId);
+        var sensors = await endUserRepository.GetSensorsByIdsAsync(sensorIds);
 
         if (sensorIds.Count == 0)
-            throw new EndUserException("No sensors to assign.");
-
-        if (endUser == null)
-            throw new NotFoundException("EndUser with this Id does not exist.");
+            throw new EndUserException($"No sensors provided to assign to EndUser with ID {endUserId}.");
 
         if (sensorIds.Count != sensors.Count)
             throw new NotFoundException("One or more sensors do not exist.");
 
         foreach (var sensor in sensors)
         {
-            if (await dbContext.EndUserSensors.AnyAsync(eus => eus.SensorId == sensor.Id && eus.EndUserId == endUser.Id))
+            if (await endUserRepository.IsEndUserSensorAssignedAsync(sensor.Id, endUser.Id!))
                 continue;
 
             endUserSensors.Add(new EndUserSensor
@@ -147,26 +133,20 @@ public class EndUserService(IMapper mapper, NetLinkDbContext dbContext, IDevelop
 
         if (endUserSensors.Count != 0)
         {
-            dbContext.EndUserSensors.AddRange(endUserSensors);
-            await dbContext.SaveChangesAsync();
+            await endUserRepository.AddEndUserSensorsAsync(endUserSensors);
+            await endUserRepository.SaveChangesAsync();
         }
         else
         {
-            throw new EndUserException("All sensors are already assigned to this EndUser.");
+            throw new EndUserException($"All sensors are already assigned to EndUser with ID {endUserId}.");
         }
     }
 
-    private async Task<EndUser> FindEndUserByIdAsync(string id)
+    public async Task<List<SensorResponseDto>> ListEndUserSensorsAsync(string endUserId)
     {
-        var endUser = await dbContext.EndUsers.FirstOrDefaultAsync(e => e.Id == id);
+        await ValidateEndUserAsync(endUserId);
 
-        if (endUser == null)
-            throw new NotFoundException("EndUser with this Id does not exist.");
-
-        return endUser;
+        var endUserSensors = await endUserRepository.ListEndUserSensorsAsync(endUserId);
+        return mapper.Map<List<SensorResponseDto>>(endUserSensors);
     }
-
-    private async Task<bool> ValidateEndUserAssociationAsync(string endUserId, Guid developerId) =>
-        await dbContext.DeveloperUsers
-            .AnyAsync(du => du.EndUserId == endUserId && du.DeveloperId == developerId);
 }
