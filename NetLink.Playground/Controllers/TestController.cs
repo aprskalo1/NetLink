@@ -1,30 +1,63 @@
 using Microsoft.AspNetCore.Mvc;
+using NetLink.Models;
 using NetLink.Services;
+using NetLink.Session;
 
 namespace NetLink.Playground.Controllers;
 
-public class TestController : Controller
+public class TestController(
+    ISensorService sensorService,
+    IEndUserManagementService endUserManagementService,
+    IGroupingService groupingService,
+    IEndUserSessionManager endUserSessionManager) : Controller
 {
-    private readonly ISensorService _sensorService;
-
-    public TestController(ISensorService sensorService)
+    public async Task<IActionResult> Privacy2()
     {
-        _sensorService = sensorService;
-    }
+        var endUser1 = new EndUser("48a187e5-3a77-4842-949a-49a85ac0a012");
+        var endUser2 = new EndUser("22");
+        await endUserManagementService.RegisterEndUserAsync(endUser1);
+        await endUserSessionManager.LogInEndUserAsync(endUser1);
 
-    // GET
-    public IActionResult Privacy2()
-    {
-        // Sensor sensor1 = new Sensor("playground_test_sensor");
-        // _sensorService.AddSensorAsync(sensor1);
+        var sensor = new Sensor(
+            deviceName: "Playground Sensor 3",
+            deviceType: "Thermometer",
+            measurementUnit: "Celsius",
+            deviceLocation: "Room 101",
+            deviceDescription: "Measures temperature"
+        );
+        await sensorService.AddSensorAsync(sensor);
+        await sensorService.AddSensorAsync(sensor, endUser2.Id);
 
-        //sensor1.RecordValue("nova vrijednostttt", _recordedValueService);
+        var endUsers1Sensors = await endUserManagementService.ListEndUserSensorsAsync(endUser1.Id!);
 
-        //var returnedSensor = _sensorService.GetSensorByName("sleepingroom_sensor");
-        //Console.WriteLine(returnedSensor.DeviceName);
-        
-        // Sensor sensor1 = new Sensor("playground_test_sensor");
-        // _sensorService.AddSensorAsync(sensor1);
+        //GROUPING TEST
+
+        var group1 = new Group(
+            groupName: "Group 1"
+        );
+
+        await groupingService.CreateGroupAsync(group1);
+
+        await groupingService.CreateGroupAsync(group1, endUser2.Id);
+        await groupingService.DeleteGroupAsync(group1.Id.Value, endUser2.Id);
+
+        foreach (var endUsers1Sensor in endUsers1Sensors)
+        {
+            await groupingService.AddSensorToGroupAsync(group1.Id.Value, endUsers1Sensor.Id.Value);
+        }
+
+        await groupingService.RemoveSensorFromGroupAsync(group1.Id.Value, endUsers1Sensors[0].Id.Value);
+
+        var endUser1Groups = await groupingService.GetEndUserGroupsAsync();
+        var endUser2Groups = await groupingService.GetEndUserGroupsAsync(endUser2.Id);
+
+        await groupingService.GetGroupByIdAsync(group1.Id.Value);
+
+        var updatedGroup1 = new Group("Updated Group 1");
+        await groupingService.UpdateGroupAsync(updatedGroup1);
+
+        await groupingService.DeleteGroupAsync(group1.Id.Value);
+
 
         return View();
     }

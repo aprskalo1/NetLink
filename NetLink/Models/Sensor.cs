@@ -1,27 +1,21 @@
-﻿using NetLink.Services;
+﻿namespace NetLink.Models;
 
-namespace NetLink.Models;
-
-public class Sensor(string? deviceName, string? deviceType, string? measurementUnit, string? deviceLocation, string? deviceDescription)
+public class Sensor(
+    string deviceName,
+    string deviceType,
+    string measurementUnit,
+    string? deviceLocation = null,
+    string? deviceDescription = null,
+    Guid? id = null)
 {
-    public string? DeviceName { get; init; } = deviceName;
+    public Guid? Id { get; init; } = id;
+    public string DeviceName { get; } = deviceName;
 
-    public string? DeviceType { get; init; } = deviceType;
+    public string DeviceType { get; init; } = deviceType;
 
-    public string? MeasurementUnit { get; init; } = measurementUnit;
+    public string MeasurementUnit { get; init; } = measurementUnit;
 
     public string? DeviceLocation { get; init; } = deviceLocation;
 
     public string? DeviceDescription { get; init; } = deviceDescription;
-
-    public RecordedValue RecordValue(string value, IRecordedValueService recordedValueService)
-    {
-        if (string.IsNullOrEmpty(DeviceName))
-        {
-            throw new Exception("Device name is required.");
-        }
-
-        var recordedValue = new RecordedValue(value);
-        return recordedValueService.RecordValue(DeviceName!, recordedValue);
-    }
 }

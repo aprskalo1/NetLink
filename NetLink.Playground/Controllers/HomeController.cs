@@ -11,40 +11,39 @@ public class HomeController(
     ILogger<HomeController> logger,
     IEndUserSessionManager endUserSessionManager,
     ISensorService sensorService,
-    IRecordedValueService recordedValueService,
     IEndUserManagementService endUserManagementService)
     : Controller
 {
     public async Task<IActionResult> Index()
     {
-        var endUser = new EndUser("9d7f978f-ca3b-4c66-9dec-69e88352a64l");
-        await endUserSessionManager.LogInEndUserAsync(endUser);
-
-        var sensor = new Sensor(
-            deviceName: "Playground Sensor 3",
-            deviceType: "Thermometer",
-            measurementUnit: "Celsius",
-            deviceLocation: "Room 101",
-            deviceDescription: "Measures temperature"
-        );
-
-        var addedSensorId = await sensorService.AddSensorAsync(sensor);
-
-        var retrievedSensor = await sensorService.GetSensorByIdAsync(addedSensorId);
-
-        var retrievedSensor2 = await sensorService.GetSensorByNameAsync(sensor.DeviceName!);
-
-        var sensor2 = new Sensor(
-            deviceName: "Playground Sensor 3 Updated",
-            deviceType: "Thermometer",
-            measurementUnit: "Celsius",
-            deviceLocation: "Room 101",
-            deviceDescription: "Measures temperature"
-        );
-
-        var retrievedSensor3 = await sensorService.UpdateSensorAsync(addedSensorId, sensor2);
-
-        await sensorService.DeleteSensorAsync(addedSensorId);
+        // var endUser = new EndUser("9d7f978f-ca3b-4c66-9dec-69e88352a64l");
+        // await endUserSessionManager.LogInEndUserAsync(endUser);
+        //
+        // var sensor = new Sensor(
+        //     deviceName: "Playground Sensor 3",
+        //     deviceType: "Thermometer",
+        //     measurementUnit: "Celsius",
+        //     deviceLocation: "Room 101",
+        //     deviceDescription: "Measures temperature"
+        // );
+        //
+        // var addedSensorId = await sensorService.AddSensorAsync(sensor);
+        //
+        // var retrievedSensor = await sensorService.GetSensorByIdAsync(addedSensorId);
+        //
+        // var retrievedSensor2 = await sensorService.GetSensorByNameAsync(sensor.DeviceName!);
+        //
+        // var sensor2 = new Sensor(
+        //     deviceName: "Playground Sensor 3 Updated",
+        //     deviceType: "Thermometer",
+        //     measurementUnit: "Celsius",
+        //     deviceLocation: "Room 101",
+        //     deviceDescription: "Measures temperature"
+        // );
+        //
+        // var retrievedSensor3 = await sensorService.UpdateSensorAsync(addedSensorId, sensor2);
+        //
+        // await sensorService.DeleteSensorAsync(addedSensorId);
 
         // var res = await endUserManagementService.RegisterEndUserAsync(endUser);
         //
@@ -77,9 +76,9 @@ public class HomeController(
 
     public async Task<IActionResult> Privacy()
     {
-        var user = new EndUser("77a9fcf4-da59-4619-85a6-b7fdbad6944a");
-        await endUserManagementService.ValidateEndUserAsync(user.Id!);
-        
+        // var user = new EndUser("77a9fcf4-da59-4619-85a6-b7fdbad6944a");
+        // await endUserManagementService.ValidateEndUserAsync(user.Id!);
+        //
         // _endUserSessionManager.GetLoggedEndUserId();
         // _endUserSessionManager.LogOutEndUser();
         // _endUserSessionManager.GetLoggedEndUserId();

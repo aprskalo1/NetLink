@@ -1,41 +1,40 @@
-﻿using NetLink.Models;
-using System.Text;
-using Newtonsoft.Json;
+﻿using NetLink.Helpers;
+using NetLink.Models;
 using NetLink.Session;
 using NetLink.Utilities;
 
 namespace NetLink.Services;
 
-public interface IRecordedValueService
+internal interface IRecordedValueService
 {
-    public RecordedValue RecordValue(string deviceName, RecordedValue recordedValue);
+    Task RecordValueBySensorNameAsync(RecordedValue recordedValue, string sensorName, string endUserId);
+    Task RecordValueBySensorIdAsync(RecordedValue recordedValue, Guid sensorId);
+    Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int quantity, bool isAscending);
 }
 
-internal class RecordedValueService(IEndUserSessionManager endUserSessionManager) : IRecordedValueService
+internal class RecordedValueService(IEndUserSessionManager endUserSessionManager, IDeveloperSessionManager developerSessionManager)
+    : HttpHelper(developerSessionManager), IRecordedValueService
 {
-    public RecordedValue RecordValue(string deviceName, RecordedValue recordedValue)
+    public async Task RecordValueBySensorNameAsync(RecordedValue recordedValue, string sensorName, string endUserId)
     {
-        var endUserId = endUserSessionManager.GetLoggedEndUserId();
-        string recordValueEndpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.AddRecordedValueUrl, deviceName, endUserId)}";
+        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.RecordValueBySensorNameUrl, sensorName, GetEffectiveUserId(endUserId))}";
+        await SendRequestAsync(HttpMethod.Post, endpoint, recordedValue);
+    }
 
-        using (var http = new HttpClient())
-        {
-            try
-            {
-                var json = JsonConvert.SerializeObject(recordedValue);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+    public async Task RecordValueBySensorIdAsync(RecordedValue recordedValue, Guid sensorId)
+    {
+        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.RecordValueBySensorIdUrl, sensorId)}";
+        await SendRequestAsync(HttpMethod.Post, endpoint, recordedValue);
+    }
 
-                HttpResponseMessage response = http.PostAsync(recordValueEndpoint, content).Result;
-                response.EnsureSuccessStatusCode();
+    public async Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int quantity, bool isAscending)
+    {
+        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.GetRecordedValuesUrl, sensorId, GetEffectiveUserId(endUserId), quantity, isAscending)}";
+        return await SendRequestAsync<List<RecordedValue>>(HttpMethod.Get, endpoint) ?? [];
+    }
 
-                var responseBody = response.Content.ReadAsStringAsync().Result;
-
-                return recordedValue;
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new Exception("An error occurred while recording the value. Please check your network connection and try again.", ex);
-            }
-        }
+    private string GetEffectiveUserId(string? userId)
+    {
+        return userId ?? endUserSessionManager.GetLoggedEndUserId();
     }
 }

@@ -23,6 +23,16 @@ internal static class ApiUrls
     public const string GetSensorByIdUrl = "/Sensors/GetSensorById?sensorId={0}&endUserId={1}";
     public const string UpdateSensorUrl = "/Sensors/UpdateSensor?sensorId={0}&endUserId={1}";
     public const string DeleteSensorUrl = "/Sensors/DeleteSensor?sensorId={0}&endUserId={1}";
+    
+    public const string CreateGroupUrl = "/Grouping/CreateGroup?endUserId={0}";
+    public const string AddSensorToGroupUrl = "/Grouping/AddSensorToGroup?groupId={0}&sensorId={1}&endUserId={2}";
+    public const string RemoveSensorFromGroupUrl = "/Grouping/RemoveSensorFromGroup?groupId={0}&sensorId={1}&endUserId={2}";
+    public const string DeleteGroupUrl = "/Grouping/DeleteGroup?groupId={0}&endUserId={1}";
+    public const string GetEndUserGroups = "/Grouping/GetEndUserGroups?endUserId={0}";
+    public const string GetGroupByIdUrl = "/Grouping/GetGroupById?groupId={0}&endUserId={1}";
+    public const string UpdateGroupUrl = "/Grouping/UpdateGroup?groupId={0}&endUserId={1}";
 
-    public const string AddRecordedValueUrl = "/RecordedValues/AddRecordedValue?sensorName={0}&endUserId={1}";
+    public const string RecordValueBySensorNameUrl = "/RecordedValues/RecordValueBySensorName?sensorName={0}&endUserId={1}";
+    public const string RecordValueBySensorIdUrl = "/RecordedValues/RecordValueBySensorId?sensorId={0}";
+    public const string GetRecordedValuesUrl = "/RecordedValues/GetRecordedValues?sensorId={0}&endUserId={1}&quantity={2}&isAscending={3}";
 }

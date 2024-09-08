@@ -13,8 +13,9 @@ public interface ISensorRepository
     Task<Sensor> GetSensorByNameAsync(string deviceName, string endUserId);
     Task<bool> DoesSensorExistAsync(string? sensorName, string endUserId);
     Task<Guid> GetSensorIdByNameAsync(string sensorName, string endUserId);
-    Task AddRecordedValueAsync(RecordedValue recordedValue);
     Task DeleteSensorAsync(Sensor sensor);
+    Task AddRecordedValueAsync(RecordedValue recordedValue);
+    Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, string endUserId, bool isAscending, int quantity);
     Task SaveChangesAsync();
 }
 
@@ -76,6 +77,16 @@ public class SensorRepository(NetLinkDbContext dbContext) : ISensorRepository
     public async Task AddRecordedValueAsync(RecordedValue recordedValue)
     {
         await dbContext.RecordedValues.AddAsync(recordedValue);
+    }
+
+    public async Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, string endUserId, bool isAscending, int quantity)
+    {
+        var query = dbContext.RecordedValues
+            .Where(r => r.SensorId == sensorId && r.Sensor.EndUserSensors.EndUserId == endUserId);
+
+        var sortedQuery = isAscending ? query.OrderBy(rv => rv.RecordedAt) : query.OrderByDescending(rv => rv.RecordedAt);
+
+        return await sortedQuery.Take(quantity).ToListAsync();
     }
 
     public async Task DeleteSensorAsync(Sensor sensor)

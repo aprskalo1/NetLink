@@ -4,6 +4,7 @@ namespace NetLink.API.DTOs.Request;
 
 public class SensorRequestDto
 {
+    public Guid Id { get; init; }
     [Required] [MaxLength(50)] public string? DeviceName { get; init; }
     [Required] [MaxLength(50)] public string? DeviceType { get; init; }
     [Required] [MaxLength(50)] public string? MeasurementUnit { get; init; }

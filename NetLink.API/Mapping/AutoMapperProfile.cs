@@ -32,8 +32,11 @@ public class AutoMapperProfile : Profile
 
         CreateMap<GroupRequestDto, Group>();
         CreateMap<Group, GroupRequestDto>();
-        
+
         CreateMap<GroupResponseDto, Group>();
         CreateMap<Group, GroupResponseDto>();
+
+        CreateMap<RecordedValueResponseDto, RecordedValue>();
+        CreateMap<RecordedValue, RecordedValueResponseDto>();
     }
 }

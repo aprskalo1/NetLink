@@ -29,7 +29,6 @@ public class GroupRepository(NetLinkDbContext dbContext) : IGroupRepository
 
     public async Task DeleteGroupAsync(Group group)
     {
-        ArgumentNullException.ThrowIfNull(group);
         dbContext.Groups.Remove(group);
         await SaveChangesAsync();
     }
@@ -70,7 +69,7 @@ public class GroupRepository(NetLinkDbContext dbContext) : IGroupRepository
         var endUserGroup = await dbContext.EndUserGroups.FirstOrDefaultAsync(x => x.EndUserId == endUserId && x.GroupId == groupId);
 
         if (endUserGroup == null)
-            throw new SensorGroupException("Group not found.");
+            throw new SensorGroupException($"Group with ID: {groupId} not found.");
     }
 
     public async Task<List<Group>> FindEndUserGroupsAsync(string endUserId)

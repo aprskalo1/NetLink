@@ -11,14 +11,14 @@ public class NetLinkExceptionFilter : IExceptionFilter
         if (context.Exception is not NetLinkCustomException netLinkCustomException) return;
         context.Result = context.Exception switch
         {
-            DeveloperException or EndUserException or SensorException or SensorGroupException => new BadRequestObjectResult(new
+            DeveloperException or EndUserException or SensorException or SensorGroupException or RecordedValueException => new BadRequestObjectResult(new
             {
                 netLinkCustomException.Message
             }),
             NotFoundException => new NotFoundObjectResult(new { netLinkCustomException.Message }),
             _ => context.Result
         };
-        
+
         context.ExceptionHandled = true;
     }
 }

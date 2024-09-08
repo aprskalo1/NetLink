@@ -32,6 +32,14 @@ internal class SensorGroupException(string message) : NetLinkCustomException(mes
     }
 }
 
+internal class RecordedValueException(string message) : NetLinkCustomException(message)
+{
+    public override string ToString()
+    {
+        return $"RecordedValueException: {Message}";
+    }
+}
+
 internal class NotFoundException(string message) : NetLinkCustomException(message)
 {
     public override string ToString()
@@ -39,3 +47,4 @@ internal class NotFoundException(string message) : NetLinkCustomException(messag
         return $"NotFoundException: {Message}";
     }
 }
+

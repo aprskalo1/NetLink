@@ -8,5 +8,5 @@ public class RecordedValue
     [MaxLength(50)] public string? Value { get; init; }
     public DateTime RecordedAt { get; init; } = DateTime.Now;
     public Guid SensorId { get; set; }
-    public Sensor? Sensor { get; init; }
+    public Sensor Sensor { get; init; }
 }
