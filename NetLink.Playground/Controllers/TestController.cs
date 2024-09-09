@@ -13,13 +13,13 @@ public class TestController(
 {
     public async Task<IActionResult> Privacy2()
     {
-        var endUser1 = new EndUser("48a187e5-3a77-4842-949a-49a85ac0a012");
-        var endUser2 = new EndUser("22");
+        var endUser1 = new EndUser("8da6e136-33ab-4b03-869d-f5f3a503e16k");
+        var endUser2 = new EndUser("8da6e136-33ab-4b03-869d-f5f3a503e16f");
         await endUserManagementService.RegisterEndUserAsync(endUser1);
         await endUserSessionManager.LogInEndUserAsync(endUser1);
 
         var sensor = new Sensor(
-            deviceName: "Playground Sensor 3",
+            deviceName: "Playground Sensor 6",
             deviceType: "Thermometer",
             measurementUnit: "Celsius",
             deviceLocation: "Room 101",
@@ -36,28 +36,27 @@ public class TestController(
             groupName: "Group 1"
         );
 
-        await groupingService.CreateGroupAsync(group1);
+        var insertedGroupId = await groupingService.CreateGroupAsync(group1);
 
-        await groupingService.CreateGroupAsync(group1, endUser2.Id);
-        await groupingService.DeleteGroupAsync(group1.Id.Value, endUser2.Id);
+        var insertedGroup2Id = await groupingService.CreateGroupAsync(group1, endUser2.Id);
+        await groupingService.DeleteGroupAsync(insertedGroup2Id, endUser2.Id);
 
         foreach (var endUsers1Sensor in endUsers1Sensors)
         {
-            await groupingService.AddSensorToGroupAsync(group1.Id.Value, endUsers1Sensor.Id.Value);
+            await groupingService.AddSensorToGroupAsync(insertedGroupId, endUsers1Sensor.Id);
         }
 
-        await groupingService.RemoveSensorFromGroupAsync(group1.Id.Value, endUsers1Sensors[0].Id.Value);
+        await groupingService.RemoveSensorFromGroupAsync(insertedGroupId, endUsers1Sensors[0].Id);
 
         var endUser1Groups = await groupingService.GetEndUserGroupsAsync();
         var endUser2Groups = await groupingService.GetEndUserGroupsAsync(endUser2.Id);
 
-        await groupingService.GetGroupByIdAsync(group1.Id.Value);
+        await groupingService.GetGroupByIdAsync(insertedGroupId);
 
         var updatedGroup1 = new Group("Updated Group 1");
-        await groupingService.UpdateGroupAsync(updatedGroup1);
+        await groupingService.UpdateGroupAsync(updatedGroup1, insertedGroupId);
 
-        await groupingService.DeleteGroupAsync(group1.Id.Value);
-
+        await groupingService.DeleteGroupAsync(insertedGroupId);
 
         return View();
     }

@@ -13,7 +13,7 @@ public interface IGroupingService
     Task DeleteGroupAsync(Guid groupId, string? endUserId = null);
     Task<List<Group>> GetEndUserGroupsAsync(string? endUserId = null);
     Task<Group> GetGroupByIdAsync(Guid groupId, string? endUserId = null);
-    Task UpdateGroupAsync(Group group, string? endUserId = null);
+    Task UpdateGroupAsync(Group group, Guid groupId, string? endUserId = null);
 }
 
 internal class GroupingService(IEndUserSessionManager endUserSessionManager, IDeveloperSessionManager developerSessionManager)
@@ -57,9 +57,9 @@ internal class GroupingService(IEndUserSessionManager endUserSessionManager, IDe
         return await SendRequestAsync<Group>(HttpMethod.Get, endpoint) ?? throw new Exception("Group not found.");
     }
 
-    public Task UpdateGroupAsync(Group group, string? endUserId = null)
+    public Task UpdateGroupAsync(Group group, Guid groupId, string? endUserId = null)
     {
-        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.UpdateGroupUrl, group.Id, GetEffectiveUserId(endUserId))}";
+        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.UpdateGroupUrl, groupId, GetEffectiveUserId(endUserId))}";
         return SendRequestAsync(HttpMethod.Put, endpoint, group);
     }
 

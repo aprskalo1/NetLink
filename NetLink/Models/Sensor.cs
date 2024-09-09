@@ -5,10 +5,9 @@ public class Sensor(
     string deviceType,
     string measurementUnit,
     string? deviceLocation = null,
-    string? deviceDescription = null,
-    Guid? id = null)
+    string? deviceDescription = null)
 {
-    public Guid? Id { get; init; } = id;
+    public Guid Id { get; init; }
     public string DeviceName { get; } = deviceName;
 
     public string DeviceType { get; init; } = deviceType;
