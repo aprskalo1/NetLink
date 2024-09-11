@@ -9,13 +9,17 @@ public interface ISensorRepository
 {
     Task AddSensorAsync(Sensor sensor);
     Task AddEndUserSensorAsync(EndUserSensor endUserSensor);
-    Task<Sensor> GetSensorByIdAsync(Guid sensorId, string endUserId);
-    Task<Sensor> GetSensorByNameAsync(string deviceName, string endUserId);
+    Task<Sensor> GetEndUserSensorByIdAsync(Guid sensorId, string endUserId);
+    Task<Sensor> GetEndUserSensorByNameAsync(string deviceName, string endUserId);
+    Task<Sensor?> GetSensorByIdAsync(Guid sensorId);
     Task<bool> DoesSensorExistAsync(string? sensorName, string endUserId);
     Task<Guid> GetSensorIdByNameAsync(string sensorName, string endUserId);
     Task DeleteSensorAsync(Sensor sensor);
     Task AddRecordedValueAsync(RecordedValue recordedValue);
-    Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, string endUserId, bool isAscending, int quantity);
+
+    Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, string endUserId, bool isAscending, int? quantity = null, DateTime? startDate = null,
+        DateTime? endDate = null);
+
     Task SaveChangesAsync();
 }
 
@@ -31,7 +35,7 @@ public class SensorRepository(NetLinkDbContext dbContext) : ISensorRepository
         await dbContext.EndUserSensors.AddAsync(endUserSensor);
     }
 
-    public async Task<Sensor> GetSensorByIdAsync(Guid sensorId, string endUserId)
+    public async Task<Sensor> GetEndUserSensorByIdAsync(Guid sensorId, string endUserId)
     {
         var sensor = await dbContext.EndUserSensors
             .Where(e => e.EndUserId == endUserId && e.SensorId == sensorId)
@@ -41,7 +45,7 @@ public class SensorRepository(NetLinkDbContext dbContext) : ISensorRepository
         return sensor ?? throw new NotFoundException($"Sensor with ID: {sensorId} has not been found.");
     }
 
-    public async Task<Sensor> GetSensorByNameAsync(string deviceName, string endUserId)
+    public async Task<Sensor> GetEndUserSensorByNameAsync(string deviceName, string endUserId)
     {
         var sensor = await dbContext.EndUserSensors
             .Where(e => e.EndUserId == endUserId && e.Sensor.DeviceName == deviceName)
@@ -49,6 +53,12 @@ public class SensorRepository(NetLinkDbContext dbContext) : ISensorRepository
             .FirstOrDefaultAsync();
 
         return sensor ?? throw new NotFoundException($"Sensor with name: {deviceName} has not been found.");
+    }
+
+    public async Task<Sensor?> GetSensorByIdAsync(Guid sensorId)
+    {
+        var sensor = await dbContext.Sensors.FirstOrDefaultAsync(s => s.Id == sensorId);
+        return sensor;
     }
 
     public async Task<bool> DoesSensorExistAsync(string? sensorName, string endUserId)
@@ -79,15 +89,32 @@ public class SensorRepository(NetLinkDbContext dbContext) : ISensorRepository
         await dbContext.RecordedValues.AddAsync(recordedValue);
     }
 
-    public async Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, string endUserId, bool isAscending, int quantity)
+    public async Task<List<RecordedValue>> GetRecordedValuesAsync(
+        Guid sensorId,
+        string endUserId,
+        bool isAscending,
+        int? quantity = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null)
     {
         var query = dbContext.RecordedValues
             .Where(r => r.SensorId == sensorId && r.Sensor.EndUserSensors.EndUserId == endUserId);
 
-        var sortedQuery = isAscending ? query.OrderBy(rv => rv.RecordedAt) : query.OrderByDescending(rv => rv.RecordedAt);
+        if (startDate.HasValue && endDate.HasValue)
+        {
+            query = query.Where(rv => rv.RecordedAt >= startDate.Value && rv.RecordedAt <= endDate.Value);
+        }
 
-        return await sortedQuery.Take(quantity).ToListAsync();
+        query = isAscending ? query.OrderBy(rv => rv.RecordedAt) : query.OrderByDescending(rv => rv.RecordedAt);
+
+        if (!startDate.HasValue && !endDate.HasValue)
+        {
+            query = query.Take(quantity ?? 1);
+        }
+
+        return await query.ToListAsync();
     }
+
 
     public async Task DeleteSensorAsync(Sensor sensor)
     {

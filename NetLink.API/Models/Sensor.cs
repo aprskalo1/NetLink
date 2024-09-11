@@ -11,6 +11,6 @@ public class Sensor
     [MaxLength(150)] public string? DeviceLocation { get; init; }
     [MaxLength(450)] public string? DeviceDescription { get; init; }
     public DateTime CreatedAt { get; init; } = DateTime.Now;
-    public EndUserSensor EndUserSensors { get; set; }
+    public EndUserSensor EndUserSensors { get; init; }
     public ICollection<SensorGroup> SensorGroups { get; init; }
 }

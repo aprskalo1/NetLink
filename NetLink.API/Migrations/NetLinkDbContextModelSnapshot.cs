@@ -141,7 +141,8 @@ namespace NetLink.API.Migrations
 
                     b.HasIndex("EndUserId");
 
-                    b.HasIndex("SensorId");
+                    b.HasIndex("SensorId")
+                        .IsUnique();
 
                     b.ToTable("EndUserSensors");
                 });
@@ -176,9 +177,9 @@ namespace NetLink.API.Migrations
                     b.Property<Guid>("SensorId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Value")
+                    b.Property<double>("Value")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
@@ -270,15 +271,15 @@ namespace NetLink.API.Migrations
                         .WithMany()
                         .HasForeignKey("EndUserId");
 
-                    b.HasOne("NetLink.API.Models.Group", "SensorGroup")
-                        .WithMany("EndUserSensorGroups")
+                    b.HasOne("NetLink.API.Models.Group", "Group")
+                        .WithMany("EndUserGroups")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("EndUser");
 
-                    b.Navigation("SensorGroup");
+                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("NetLink.API.Models.EndUserSensor", b =>
@@ -288,8 +289,8 @@ namespace NetLink.API.Migrations
                         .HasForeignKey("EndUserId");
 
                     b.HasOne("NetLink.API.Models.Sensor", "Sensor")
-                        .WithMany()
-                        .HasForeignKey("SensorId")
+                        .WithOne("EndUserSensors")
+                        .HasForeignKey("NetLink.API.Models.EndUserSensor", "SensorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -330,13 +331,16 @@ namespace NetLink.API.Migrations
 
             modelBuilder.Entity("NetLink.API.Models.Group", b =>
                 {
-                    b.Navigation("EndUserSensorGroups");
+                    b.Navigation("EndUserGroups");
 
                     b.Navigation("SensorGroups");
                 });
 
             modelBuilder.Entity("NetLink.API.Models.Sensor", b =>
                 {
+                    b.Navigation("EndUserSensors")
+                        .IsRequired();
+
                     b.Navigation("SensorGroups");
                 });
 #pragma warning restore 612, 618

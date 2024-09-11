@@ -2,7 +2,7 @@
 
 namespace NetLink.Services;
 
-public static class ServicesExtensions
+public static class SensorServicesExtensions
 {
     public static IServiceCollection AddSensorServices(this IServiceCollection services)
     {

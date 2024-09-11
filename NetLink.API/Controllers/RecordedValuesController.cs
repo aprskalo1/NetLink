@@ -33,12 +33,12 @@ public class RecordedValuesController(ISensorOperationsService sensorService) : 
 
     [HttpGet("GetRecordedValues")]
     [Authorize]
-    public async Task<ActionResult<List<RecordedValueRequestDto>>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int quantity,
-        bool isAscending = false)
+    public async Task<ActionResult<List<RecordedValueRequestDto>>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int? quantity = null,
+        bool isAscending = false, DateTime? startDate = null, DateTime? endDate = null)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        var recordedValues = await sensorService.GetRecordedValuesAsync(sensorId, endUserId, quantity, isAscending);
+        var recordedValues = await sensorService.GetRecordedValuesAsync(sensorId, endUserId, quantity, isAscending, startDate, endDate);
         return Ok(recordedValues);
     }
 

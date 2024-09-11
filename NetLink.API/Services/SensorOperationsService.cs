@@ -17,7 +17,9 @@ public interface ISensorOperationsService
     Task RecordValueByNameAsync(RecordedValueRequestDto recordedValueRequestDto, string sensorName, string endUserId);
     Task RecordValueByIdAsync(RecordedValueRequestDto recordedValueRequestDto, Guid sensorId);
     Task RecordValueRemotelyAsync(RecordedValueRequestDto recordedValueRequestDto, Guid sensorId);
-    Task<List<RecordedValueResponseDto>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int quantity, bool isAscending = false);
+
+    Task<List<RecordedValueResponseDto>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int? quantity = null, bool isAscending = false,
+        DateTime? startDate = null, DateTime? endDate = null);
 }
 
 public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRepository, IEndUserService endUserService)
@@ -48,13 +50,13 @@ public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRep
 
     public async Task<SensorResponseDto> GetSensorByIdAsync(Guid sensorId, string endUserId)
     {
-        var sensor = await sensorRepository.GetSensorByIdAsync(sensorId, endUserId);
+        var sensor = await sensorRepository.GetEndUserSensorByIdAsync(sensorId, endUserId);
         return mapper.Map<SensorResponseDto>(sensor);
     }
 
     public async Task<SensorResponseDto> UpdateSensorAsync(Guid sensorId, SensorRequestDto sensorRequestDto, string endUserId)
     {
-        var sensor = await sensorRepository.GetSensorByIdAsync(sensorId, endUserId);
+        var sensor = await sensorRepository.GetEndUserSensorByIdAsync(sensorId, endUserId);
 
         mapper.Map(sensorRequestDto, sensor);
         await sensorRepository.SaveChangesAsync();
@@ -64,7 +66,7 @@ public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRep
 
     public async Task DeleteSensorAsync(Guid sensorId, string endUserId)
     {
-        var sensor = await sensorRepository.GetSensorByIdAsync(sensorId, endUserId);
+        var sensor = await sensorRepository.GetEndUserSensorByIdAsync(sensorId, endUserId);
         await sensorRepository.DeleteSensorAsync(sensor);
     }
 
@@ -72,7 +74,7 @@ public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRep
     {
         await endUserService.ValidateEndUserAsync(endUserId);
 
-        var sensor = await sensorRepository.GetSensorByNameAsync(deviceName, endUserId);
+        var sensor = await sensorRepository.GetEndUserSensorByNameAsync(deviceName, endUserId);
         return mapper.Map<SensorResponseDto>(sensor);
     }
 
@@ -98,6 +100,12 @@ public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRep
 
     public async Task RecordValueRemotelyAsync(RecordedValueRequestDto recordedValueRequestDto, Guid sensorId)
     {
+        var existingSensor = await sensorRepository.GetSensorByIdAsync(sensorId);
+        if (existingSensor is null)
+        {
+            throw new NotFoundException($"Sensor with ID: {sensorId} has not been found.");
+        }
+
         var recordedValue = mapper.Map<RecordedValue>(recordedValueRequestDto);
         recordedValue.SensorId = sensorId;
 
@@ -105,20 +113,28 @@ public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRep
         await sensorRepository.SaveChangesAsync();
     }
 
-    public async Task<List<RecordedValueResponseDto>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int quantity, bool isAscending = false)
+    public async Task<List<RecordedValueResponseDto>> GetRecordedValuesAsync(
+        Guid sensorId,
+        string endUserId,
+        int? quantity = null,
+        bool isAscending = false,
+        DateTime? startDate = null,
+        DateTime? endDate = null)
     {
-        switch (quantity)
+        if (startDate == null && endDate == null)
         {
-            case < 1:
-                throw new RecordedValueException("Quantity must be greater than 0.");
-            case > 100:
-                throw new RecordedValueException("Quantity must be less than or equal to 100.");
+            switch (quantity)
+            {
+                case < 1:
+                    throw new RecordedValueException("Quantity must be greater than 0.");
+                case > 100:
+                    throw new RecordedValueException("Quantity must be less than or equal to 100.");
+            }
         }
-        
+
         await endUserService.ValidateEndUserAsync(endUserId);
-        
-        var recordedValues = await sensorRepository.GetRecordedValuesAsync(sensorId, endUserId, isAscending, quantity);
-        
+
+        var recordedValues = await sensorRepository.GetRecordedValuesAsync(sensorId, endUserId, isAscending, quantity, startDate, endDate);
         return mapper.Map<List<RecordedValueResponseDto>>(recordedValues);
     }
 }

@@ -15,7 +15,7 @@ public interface IGroupingService
     Task RemoveSensorFromGroupAsync(Guid groupId, Guid sensorId, string endUserId);
     Task<List<GroupResponseDto>> GetEndUserGroupsAsync(string endUserId);
     Task<GroupResponseDto> GetGroupByIdAsync(Guid groupId, string endUserId);
-    Task UpdateGroupAsync(GroupRequestDto groupDto, Guid groupId, string endUserId);
+    Task<GroupResponseDto> UpdateGroupAsync(GroupRequestDto groupDto, Guid groupId, string endUserId);
 }
 
 public class GroupingService(IEndUserService endUserService, IMapper mapper, IGroupRepository groupRepository) : IGroupingService
@@ -110,7 +110,7 @@ public class GroupingService(IEndUserService endUserService, IMapper mapper, IGr
         return mapper.Map<GroupResponseDto>(group);
     }
 
-    public async Task UpdateGroupAsync(GroupRequestDto groupDto, Guid groupId, string endUserId)
+    public async Task<GroupResponseDto> UpdateGroupAsync(GroupRequestDto groupDto, Guid groupId, string endUserId)
     {
         await endUserService.ValidateEndUserAsync(endUserId);
         await groupRepository.ValidateUserGroupAsync(endUserId, groupId);
@@ -122,5 +122,7 @@ public class GroupingService(IEndUserService endUserService, IMapper mapper, IGr
 
         var group = mapper.Map(groupDto, existingGroup);
         await groupRepository.UpdateGroupAsync(group);
+
+        return mapper.Map<GroupResponseDto>(group);
     }
 }

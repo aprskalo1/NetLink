@@ -1,5 +1,6 @@
 using NetLink.Services;
 using NetLink.Session;
+using NetLink.Statistics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ builder.Services.AddControllersWithViews();
 builder.Services
     .AuthenticateWithDevToken(builder.Configuration["NetLink:DevToken"]!)
     .AddEndUsers()
+    .AddStatisticsServices()
     .AddSensorServices();
 
 var app = builder.Build();

@@ -56,7 +56,6 @@ public class GroupingController(IGroupingService groupingService) : ControllerBa
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        await groupingService.UpdateGroupAsync(groupRequestDto, groupId, endUserId);
-        return Ok();
+        return Ok(await groupingService.UpdateGroupAsync(groupRequestDto, groupId, endUserId));
     }
 }

@@ -5,17 +5,19 @@ using NetLink.Utilities;
 
 namespace NetLink.Services;
 
-internal interface IRecordedValueService
+public interface IRecordedValueService
 {
-    Task RecordValueBySensorNameAsync(RecordedValue recordedValue, string sensorName, string endUserId);
+    Task RecordValueBySensorNameAsync(RecordedValue recordedValue, string sensorName, string? endUserId = null);
     Task RecordValueBySensorIdAsync(RecordedValue recordedValue, Guid sensorId);
-    Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int quantity, bool isAscending);
+
+    Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, bool isAscending, int? quantity = null,
+        DateTime? startDate = null, DateTime? endDate = null, string? endUserId = null);
 }
 
 internal class RecordedValueService(IEndUserSessionManager endUserSessionManager, IDeveloperSessionManager developerSessionManager)
     : HttpHelper(developerSessionManager), IRecordedValueService
 {
-    public async Task RecordValueBySensorNameAsync(RecordedValue recordedValue, string sensorName, string endUserId)
+    public async Task RecordValueBySensorNameAsync(RecordedValue recordedValue, string sensorName, string? endUserId = null)
     {
         var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.RecordValueBySensorNameUrl, sensorName, GetEffectiveUserId(endUserId))}";
         await SendRequestAsync(HttpMethod.Post, endpoint, recordedValue);
@@ -27,9 +29,11 @@ internal class RecordedValueService(IEndUserSessionManager endUserSessionManager
         await SendRequestAsync(HttpMethod.Post, endpoint, recordedValue);
     }
 
-    public async Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int quantity, bool isAscending)
+    public async Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, bool isAscending, int? quantity = null,
+        DateTime? startDate = null, DateTime? endDate = null, string? endUserId = null)
     {
-        var endpoint = $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.GetRecordedValuesUrl, sensorId, GetEffectiveUserId(endUserId), quantity, isAscending)}";
+        var endpoint =
+            $"{ApiUrls.BaseUrl}{string.Format(ApiUrls.GetRecordedValuesUrl, sensorId, GetEffectiveUserId(endUserId), quantity, isAscending, startDate, endDate)}";
         return await SendRequestAsync<List<RecordedValue>>(HttpMethod.Get, endpoint) ?? [];
     }
 

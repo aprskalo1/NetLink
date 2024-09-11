@@ -13,13 +13,13 @@ public class TestController(
 {
     public async Task<IActionResult> Privacy2()
     {
-        var endUser1 = new EndUser("8da6e136-33ab-4b03-869d-f5f3a503e16k");
-        var endUser2 = new EndUser("8da6e136-33ab-4b03-869d-f5f3a503e16f");
+        var endUser1 = new EndUser("8da6e136-33ab-4b03-869d-f5f3a503e16b");
+        var endUser2 = new EndUser("48a187e5-3a77-4842-949a-49a85ac0a0e9");
         await endUserManagementService.RegisterEndUserAsync(endUser1);
         await endUserSessionManager.LogInEndUserAsync(endUser1);
 
         var sensor = new Sensor(
-            deviceName: "Playground Sensor 6",
+            deviceName: "Playground Sensor 7",
             deviceType: "Thermometer",
             measurementUnit: "Celsius",
             deviceLocation: "Room 101",

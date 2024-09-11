@@ -4,6 +4,7 @@ using System.Diagnostics;
 using NetLink.Models;
 using NetLink.Session;
 using NetLink.Services;
+using NetLink.Statistics;
 
 namespace NetLink.Playground.Controllers;
 
@@ -11,11 +12,36 @@ public class HomeController(
     ILogger<HomeController> logger,
     IEndUserSessionManager endUserSessionManager,
     ISensorService sensorService,
-    IEndUserManagementService endUserManagementService)
+    IEndUserManagementService endUserManagementService,
+    IRecordedValueService recordedValueService,
+    IStatisticsService statistics)
     : Controller
 {
     public async Task<IActionResult> Index()
     {
+        var endUser = new EndUser("48a187e5-3a77-4842-949a-49a85ac0a0e9");
+        await endUserSessionManager.LogInEndUserAsync(endUser);
+
+        var sensors = await endUserManagementService.ListEndUserSensorsAsync(endUser.Id!);
+
+        for (var i = 0; i < 10; i++)
+        {
+            await recordedValueService.RecordValueBySensorNameAsync(new RecordedValue(25), sensors[0].DeviceName, endUser.Id!);
+            await recordedValueService.RecordValueBySensorIdAsync(new RecordedValue(21), sensors[1].Id);
+        }
+
+        var recordedValues = await recordedValueService.GetRecordedValuesAsync(sensors[0].Id, true, 10);
+        var recordedValues2 =
+            await recordedValueService.GetRecordedValuesAsync(sensors[0].Id, false, null, DateTime.Now.AddDays(-1), DateTime.Now);
+
+        var value = statistics.GetAverageValue(recordedValues);
+        var value1 = statistics.GetMedianValue(recordedValues);
+        var value2 = statistics.GetVariance(recordedValues);
+        var value3 = statistics.GetStandardDeviation(recordedValues);
+        var value4 = statistics.GetMinValue(recordedValues);
+        var value5 = statistics.GetMaxValue(recordedValues);
+
+
         // var endUser = new EndUser("9d7f978f-ca3b-4c66-9dec-69e88352a64l");
         // await endUserSessionManager.LogInEndUserAsync(endUser);
         //

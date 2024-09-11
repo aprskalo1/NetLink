@@ -69,7 +69,7 @@ public class GroupRepository(NetLinkDbContext dbContext) : IGroupRepository
         var endUserGroup = await dbContext.EndUserGroups.FirstOrDefaultAsync(x => x.EndUserId == endUserId && x.GroupId == groupId);
 
         if (endUserGroup == null)
-            throw new SensorGroupException($"Group with ID: {groupId} not found.");
+            throw new SensorGroupException($"Group with ID: {groupId} has not found.");
     }
 
     public async Task<List<Group>> FindEndUserGroupsAsync(string endUserId)

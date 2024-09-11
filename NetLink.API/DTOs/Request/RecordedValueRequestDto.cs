@@ -4,5 +4,5 @@ namespace NetLink.API.DTOs.Request;
 
 public class RecordedValueRequestDto
 {
-    [Required] [MaxLength(50)] public string? Value { get; init; }
+    [Required] public double Value { get; init; }
 }

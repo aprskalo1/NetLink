@@ -34,5 +34,5 @@ internal static class ApiUrls
 
     public const string RecordValueBySensorNameUrl = "/RecordedValues/RecordValueBySensorName?sensorName={0}&endUserId={1}";
     public const string RecordValueBySensorIdUrl = "/RecordedValues/RecordValueBySensorId?sensorId={0}";
-    public const string GetRecordedValuesUrl = "/RecordedValues/GetRecordedValues?sensorId={0}&endUserId={1}&quantity={2}&isAscending={3}";
+    public const string GetRecordedValuesUrl = "/RecordedValues/GetRecordedValues?sensorId={0}&endUserId={1}&quantity={2}&isAscending={3}&startDate={4}&endDate={5}";
 }

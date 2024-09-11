@@ -1,7 +1,7 @@
 ﻿namespace NetLink.Models;
 
-public class RecordedValue(string? value, DateTime recordedAt)
+public class RecordedValue(double value)
 {
-    public string? Value { get; set; } = value;
-    public DateTime RecordedAt { get; init; } = recordedAt;
+    public double Value { get; } = value;
+    public DateTime RecordedAt { get; init; }
 }
