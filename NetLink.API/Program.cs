@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MQTTnet.AspNetCore;
 using NetLink.API.Data;
 using NetLink.API.Exceptions;
 using NetLink.API.Mapping;
 using NetLink.API.Repositories;
 using NetLink.API.Services;
 using NetLink.API.Services.Auth;
+using NetLink.API.Services.MQTT;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +70,24 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5169);
+    options.ListenAnyIP(7260, listenOptions => { listenOptions.UseHttps(); });
+    options.ListenAnyIP(1883, listenOptions => { listenOptions.UseMqtt(); });
+});
+
+builder.Services.AddHostedMqttServer(optionsBuilder =>
+{
+    optionsBuilder
+        .WithDefaultEndpoint()
+        .WithDefaultEndpointPort(1883)
+        .WithDefaultEndpointBoundIPAddress(System.Net.IPAddress.Any);
+});
+
+builder.Services.AddMqttConnectionHandler();
+builder.Services.AddConnections();
+
 builder.Services.AddControllers(options => { options.Filters.Add<NetLinkExceptionFilter>(); });
 builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
@@ -83,6 +103,7 @@ builder.Services.AddScoped<IDeveloperService, DeveloperService>();
 builder.Services.AddScoped<IEndUserService, EndUserService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IGroupingService, GroupingService>();
+builder.Services.AddSingleton<IMqttService, MqttService>();
 
 var app = builder.Build();
 
@@ -92,7 +113,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.MapConnectionHandler<MqttConnectionHandler>(
+    "/mqtt",
+    httpConnectionDispatcherOptions => httpConnectionDispatcherOptions.WebSockets.SubProtocolSelector =
+        protocolList => protocolList.FirstOrDefault() ?? string.Empty);
+
+var mqttService = app.Services.GetRequiredService<IMqttService>();
+app.UseMqttServer(server =>
+{
+    server.ValidatingConnectionAsync += mqttService.ValidateConnection;
+    server.ClientConnectedAsync += mqttService.OnClientConnected;
+    server.InterceptingPublishAsync += mqttService.OnMessageReceived;
+});
+
+// app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
