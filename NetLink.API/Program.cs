@@ -126,7 +126,7 @@ app.UseMqttServer(server =>
     server.InterceptingPublishAsync += mqttService.OnMessageReceived;
 });
 
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

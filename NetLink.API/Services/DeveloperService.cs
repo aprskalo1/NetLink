@@ -118,7 +118,6 @@ public class DeveloperService(IMapper mapper, IDeveloperRepository developerRepo
     {
         var developer = await developerRepository.GetDeveloperByIdAsync(developerId);
         await developerRepository.DeleteDeveloperAsync(developer);
-        await developerRepository.SaveChangesAsync();
     }
 
     public async Task<List<DeveloperResponseDto>> ListDevelopersAsync()
