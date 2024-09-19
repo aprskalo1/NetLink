@@ -6,7 +6,7 @@ namespace NetLink.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AuthController(IJwtTokenService jwtTokenService, IDeveloperService developerService) : Controller
+public class AuthController(IJwtTokenService jwtTokenService, IDeveloperService developerService, IFirebaseService firebaseService) : Controller
 {
     [HttpPost("AuthorizeClient")]
     public async Task<IActionResult> AuthorizeClient(string devToken)
@@ -15,10 +15,16 @@ public class AuthController(IJwtTokenService jwtTokenService, IDeveloperService 
         return Ok(jwtTokenService.GenerateToken());
     }
 
-    [HttpGet("ValidateDeveloper")]
-    public async Task<IActionResult> ValidateDeveloper(string token)
+    [HttpPost("AuthorizeFirebaseClient")]
+    public async Task<IActionResult> AuthorizeFirebaseClient(string firebaseToken)
     {
-        await developerService.ValidateDeveloperAsync(token);
+        return Ok(await firebaseService.AuthoriseFirebaseClient(firebaseToken));
+    }
+
+    [HttpGet("ValidateDeveloper")]
+    public async Task<IActionResult> ValidateDeveloper(string devToken)
+    {
+        await developerService.ValidateDeveloperAsync(devToken);
         return Ok();
     }
 }

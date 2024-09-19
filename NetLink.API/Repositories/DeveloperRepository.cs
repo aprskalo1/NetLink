@@ -14,6 +14,7 @@ public interface IDeveloperRepository
     Task<List<Developer>> ListDevelopersAsync();
     Task UpdateDeveloperAsync(Developer developer);
     Task DeleteDeveloperAsync(Developer developer);
+    Task<Developer?> FindDeveloperByUsernameAsync(string username);
     Task SaveChangesAsync();
     Task<bool> CheckIfDeveloperExistsAsync(string username);
 }
@@ -58,6 +59,11 @@ public class DeveloperRepository(NetLinkDbContext dbContext) : IDeveloperReposit
     {
         dbContext.Developers.Remove(developer);
         await SaveChangesAsync();
+    }
+
+    public async Task<Developer?> FindDeveloperByUsernameAsync(string username)
+    {
+        return await dbContext.Developers.FirstOrDefaultAsync(d => d.Username == username);
     }
 
     public async Task<bool> CheckIfDeveloperExistsAsync(string username)

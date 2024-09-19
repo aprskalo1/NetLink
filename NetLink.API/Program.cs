@@ -1,4 +1,7 @@
 using System.Text;
+using FirebaseAdmin;
+using FirebaseAdmin.Auth;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -85,6 +88,23 @@ builder.Services.AddHostedMqttServer(optionsBuilder =>
         .WithDefaultEndpointBoundIPAddress(System.Net.IPAddress.Any);
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        policyBuilder =>
+        {
+            policyBuilder.WithOrigins("http://localhost:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
+});
+
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile("firebaseServiceAcc.json")
+});
+
 builder.Services.AddMqttConnectionHandler();
 builder.Services.AddConnections();
 
@@ -103,6 +123,8 @@ builder.Services.AddScoped<IDeveloperService, DeveloperService>();
 builder.Services.AddScoped<IEndUserService, EndUserService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IGroupingService, GroupingService>();
+builder.Services.AddScoped<IFirebaseService, FirebaseService>();
+builder.Services.AddSingleton(FirebaseAuth.DefaultInstance);
 builder.Services.AddSingleton<IMqttService, MqttService>();
 
 var app = builder.Build();
@@ -130,5 +152,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.UseCors("AllowSpecificOrigin");
 
 app.Run();
