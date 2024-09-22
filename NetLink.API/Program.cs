@@ -98,6 +98,15 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod()
                 .AllowCredentials();
         });
+
+    options.AddPolicy("AllowAnotherOrigin",
+        policyBuilder =>
+        {
+            policyBuilder.WithOrigins("http://192.168.0.188:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
 });
 
 FirebaseApp.Create(new AppOptions()
@@ -133,6 +142,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors("AllowSpecificOrigin");
+    app.UseCors("AllowAnotherOrigin");
 }
 
 app.MapConnectionHandler<MqttConnectionHandler>(
@@ -152,6 +163,5 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.UseCors("AllowSpecificOrigin");
 
 app.Run();
