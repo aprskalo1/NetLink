@@ -14,42 +14,64 @@ public class HomeController(
     ISensorService sensorService,
     IEndUserManagementService endUserManagementService,
     IRecordedValueService recordedValueService,
-    IStatisticsService statistics)
+    IStatisticsService statistics,
+    ISensorSubscriptionService sensorSubscriptionService)
     : Controller
 {
     public async Task<IActionResult> Index()
     {
-        //ID from your login example oatuh provider or custom login
-        var endUser = new EndUser("48a187e5-3a77-4842-949a-49a85ac0a0e9");
+        var endUser = new EndUser("9d7f978f-ca3b-4c66-9dec-69e88352a64l");
+
         await endUserSessionManager.LogInEndUserAsync(endUser);
-        
-        var sensorIds = new List<Guid>
+
+        var endUserSensors = await endUserManagementService.ListEndUserSensorsAsync(endUser.Id!);
+
+        await sensorSubscriptionService.StartListeningAsync(endUserSensors[0].Id.ToString());
+
+        sensorSubscriptionService.OnRecordedValueReceived += (recordedValue) =>
         {
-            new("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"),
-            new("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+            Console.WriteLine("Helooooooooooooo:" + recordedValue.Value);
         };
 
-        await endUserManagementService.AssignSensorsToEndUserAsync(sensorIds, endUser.Id!);
-        
-        
-        var sensors = await endUserManagementService.ListEndUserSensorsAsync(endUser.Id!);
 
-        for (var i = 0; i < 10; i++)
-        {
-            await recordedValueService.RecordValueBySensorNameAsync(new RecordedValue(25), sensors[0].DeviceName, endUser.Id!);
-            await recordedValueService.RecordValueBySensorIdAsync(new RecordedValue(21), sensors[1].Id);
-        }
-
-        var recordedValues = await recordedValueService.GetRecordedValuesAsync(sensors[0].Id, true, 10);
-        var recordedValues2 =
-            await recordedValueService.GetRecordedValuesAsync(sensors[0].Id, false, null, DateTime.Now.AddDays(-1), DateTime.Now);
-
-        var value = statistics.GetAverageValue(recordedValues);
-        var value1 = statistics.GetMedianValue(recordedValues);
-        var value2 = statistics.GetVariance(recordedValues);
-        var value3 = statistics.GetStandardDeviation(recordedValues);
-        var value4 = statistics.GetMinValue(recordedValues);
-        var value5 = statistics.GetMaxValue(recordedValues);
+        //ID from your login example oatuh provider or custom login
+        // var endUser = new EndUser("48a187e5-3a77-4842-949a-49a85ac0a0e9");
+        // await endUserSessionManager.LogInEndUserAsync(endUser);
+        //
+        // var sensorIds = new List<Guid>
+        // {
+        //     new("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"),
+        //     new("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+        // };
+        //
+        // await endUserManagementService.AssignSensorsToEndUserAsync(sensorIds, endUser.Id!);
+        //
+        // var sensors = await endUserManagementService.ListEndUserSensorsAsync(endUser.Id!);
+        //
+        // for (var i = 0; i < 10; i++)
+        // {
+        //     await recordedValueService.RecordValueBySensorNameAsync(new RecordedValue(25), sensors[0].DeviceName,
+        //         endUser.Id!);
+        //     await recordedValueService.RecordValueBySensorIdAsync(new RecordedValue(21), sensors[1].Id);
+        // }
+        //
+        // var recordedValues = await recordedValueService.GetRecordedValuesAsync(sensors[0].Id, true, 10);
+        // var recordedValues2 =
+        //     await recordedValueService.GetRecordedValuesAsync(sensors[0].Id, false, null, DateTime.Now.AddDays(-1),
+        //         DateTime.Now);
+        //
+        // var value = statistics.GetAverageValue(recordedValues);
+        // var value1 = statistics.GetMedianValue(recordedValues);
+        // var value2 = statistics.GetVariance(recordedValues);
+        // var value3 = statistics.GetStandardDeviation(recordedValues);
+        // var value4 = statistics.GetMinValue(recordedValues);
+        // var value5 = statistics.GetMaxValue(recordedValues);
+        //
+        // await sensorSubscriptionService.StartListeningAsync(sensors[0].Id.ToString());
+        // sensorSubscriptionService.OnRecordedValueReceived += (recordedValue) =>
+        // {
+        //     Console.WriteLine(recordedValue.Value);
+        // };
 
 
         // var endUser = new EndUser("9d7f978f-ca3b-4c66-9dec-69e88352a64l");

@@ -4,8 +4,10 @@ internal static class ApiUrls
 {
     public const string BaseUrl = "https://localhost:7260/api";
 
+    public const string SignalRUrl = "https://localhost:7260/sensorHub";
+
     public const string AuthUrl = "/Auth/AuthorizeClient?devToken={0}";
-    public const string DevTokenValidationUrl = "/Auth/ValidateDeveloper?token={0}";
+    public const string DevTokenValidationUrl = "/Auth/ValidateDeveloper?devToken={0}";
 
     public const string EndUserRegistrationUrl = "/EndUsers/RegisterEndUser?devToken={0}";
     public const string EndUserValidationUrl = "/EndUsers/ValidateEndUser?endUserId={0}";

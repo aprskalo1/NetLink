@@ -10,6 +10,7 @@ public static class SensorServicesExtensions
         services.AddSingleton<IRecordedValueService, RecordedValueService>();
         services.AddSingleton<IEndUserManagementService, EndUserManagementService>();
         services.AddSingleton<IGroupingService, GroupingService>();
+        services.AddSingleton<ISensorSubscriptionService, SensorSubscriptionService>();
 
         return services;
     }

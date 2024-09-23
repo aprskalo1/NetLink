@@ -9,7 +9,7 @@ builder.Services.AddControllersWithViews();
 
 //netlink builder services
 builder.Services
-    .AuthenticateWithDevToken(builder.Configuration["NetLink:DevToken"]!)
+    .AuthenticateWithDevToken("NLz6f8yHWmjwWBeEAmiSOLdEQg1LLcsWEtopKQk1fMBkAr5S1tzaRCLTsMbuIbp7iibxZcGRLJqa6zERP7g")
     .AddEndUsers()
     .AddStatisticsServices()
     .AddSensorServices();

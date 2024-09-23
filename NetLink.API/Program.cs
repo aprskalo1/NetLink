@@ -42,7 +42,10 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddDbContext<NetLinkDbContext>(options => { options.UseSqlServer("name=ConnectionStrings:DefaultConnection"); });
+builder.Services.AddDbContext<NetLinkDbContext>(options =>
+{
+    options.UseSqlServer("name=ConnectionStrings:DefaultConnection");
+});
 
 builder.Services.AddSwaggerGen(c =>
 {
