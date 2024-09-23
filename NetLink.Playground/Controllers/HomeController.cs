@@ -19,9 +19,19 @@ public class HomeController(
 {
     public async Task<IActionResult> Index()
     {
+        //ID from your login example oatuh provider or custom login
         var endUser = new EndUser("48a187e5-3a77-4842-949a-49a85ac0a0e9");
         await endUserSessionManager.LogInEndUserAsync(endUser);
+        
+        var sensorIds = new List<Guid>
+        {
+            new("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"),
+            new("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+        };
 
+        await endUserManagementService.AssignSensorsToEndUserAsync(sensorIds, endUser.Id!);
+        
+        
         var sensors = await endUserManagementService.ListEndUserSensorsAsync(endUser.Id!);
 
         for (var i = 0; i < 10; i++)

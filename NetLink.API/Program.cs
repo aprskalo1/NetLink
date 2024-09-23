@@ -9,6 +9,7 @@ using Microsoft.OpenApi.Models;
 using MQTTnet.AspNetCore;
 using NetLink.API.Data;
 using NetLink.API.Exceptions;
+using NetLink.API.Hubs;
 using NetLink.API.Mapping;
 using NetLink.API.Repositories;
 using NetLink.API.Services;
@@ -41,7 +42,10 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddDbContext<NetLinkDbContext>(options => { options.UseSqlServer("name=ConnectionStrings:DefaultConnection"); });
+builder.Services.AddDbContext<NetLinkDbContext>(options =>
+{
+    options.UseSqlServer("name=ConnectionStrings:DefaultConnection");
+});
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -98,15 +102,6 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod()
                 .AllowCredentials();
         });
-
-    options.AddPolicy("AllowAnotherOrigin",
-        policyBuilder =>
-        {
-            policyBuilder.WithOrigins("http://192.168.0.188:5173")
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
-        });
 });
 
 FirebaseApp.Create(new AppOptions()
@@ -116,6 +111,7 @@ FirebaseApp.Create(new AppOptions()
 
 builder.Services.AddMqttConnectionHandler();
 builder.Services.AddConnections();
+builder.Services.AddSignalR();
 
 builder.Services.AddControllers(options => { options.Filters.Add<NetLinkExceptionFilter>(); });
 builder.Services.AddAuthorization();
@@ -142,8 +138,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors("AllowSpecificOrigin");
-    app.UseCors("AllowAnotherOrigin");
 }
 
 app.MapConnectionHandler<MqttConnectionHandler>(
@@ -163,5 +157,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<SensorHub>("/sensorHub");
+app.UseCors("AllowSpecificOrigin");
 
 app.Run();

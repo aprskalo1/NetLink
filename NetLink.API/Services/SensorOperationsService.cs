@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using NetLink.API.DTOs.Request;
 using NetLink.API.DTOs.Response;
 using NetLink.API.Exceptions;
+using NetLink.API.Hubs;
 using NetLink.API.Models;
 using NetLink.API.Repositories;
 
@@ -18,11 +20,16 @@ public interface ISensorOperationsService
     Task RecordValueByIdAsync(RecordedValueRequestDto recordedValueRequestDto, Guid sensorId);
     Task RecordValueRemotelyAsync(RecordedValueRequestDto recordedValueRequestDto, Guid sensorId);
 
-    Task<List<RecordedValueResponseDto>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int? quantity = null, bool isAscending = false,
+    Task<List<RecordedValueResponseDto>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int? quantity = null,
+        bool isAscending = false,
         DateTime? startDate = null, DateTime? endDate = null);
 }
 
-public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRepository, IEndUserService endUserService)
+public class SensorOperationsService(
+    IMapper mapper,
+    ISensorRepository sensorRepository,
+    IEndUserService endUserService,
+    IHubContext<SensorHub> hubContext)
     : ISensorOperationsService
 {
     public async Task<Guid> AddSensorAsync(SensorRequestDto sensorRequestDto, string endUserId)
@@ -31,7 +38,8 @@ public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRep
 
         if (await sensorRepository.DoesSensorExistAsync(sensorRequestDto.DeviceName, endUserId))
         {
-            throw new SensorException($"Device with name: {sensorRequestDto.DeviceName} already exists, please choose another name.");
+            throw new SensorException(
+                $"Device with name: {sensorRequestDto.DeviceName} already exists, please choose another name.");
         }
 
         var sensor = mapper.Map<Sensor>(sensorRequestDto);
@@ -54,7 +62,8 @@ public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRep
         return mapper.Map<SensorResponseDto>(sensor);
     }
 
-    public async Task<SensorResponseDto> UpdateSensorAsync(Guid sensorId, SensorRequestDto sensorRequestDto, string endUserId)
+    public async Task<SensorResponseDto> UpdateSensorAsync(Guid sensorId, SensorRequestDto sensorRequestDto,
+        string endUserId)
     {
         var sensor = await sensorRepository.GetEndUserSensorByIdAsync(sensorId, endUserId);
 
@@ -78,7 +87,8 @@ public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRep
         return mapper.Map<SensorResponseDto>(sensor);
     }
 
-    public async Task RecordValueByNameAsync(RecordedValueRequestDto recordedValueRequestDto, string sensorName, string endUserId)
+    public async Task RecordValueByNameAsync(RecordedValueRequestDto recordedValueRequestDto, string sensorName,
+        string endUserId)
     {
         var sensorId = await sensorRepository.GetSensorIdByNameAsync(sensorName, endUserId);
 
@@ -111,6 +121,9 @@ public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRep
 
         await sensorRepository.AddRecordedValueAsync(recordedValue);
         await sensorRepository.SaveChangesAsync();
+
+        await hubContext.Clients.Group(sensorId.ToString())
+            .SendAsync("ReceiveRecordedValue", recordedValue);
     }
 
     public async Task<List<RecordedValueResponseDto>> GetRecordedValuesAsync(
@@ -134,7 +147,9 @@ public class SensorOperationsService(IMapper mapper, ISensorRepository sensorRep
 
         await endUserService.ValidateEndUserAsync(endUserId);
 
-        var recordedValues = await sensorRepository.GetRecordedValuesAsync(sensorId, endUserId, isAscending, quantity, startDate, endDate);
+        var recordedValues =
+            await sensorRepository.GetRecordedValuesAsync(sensorId, endUserId, isAscending, quantity, startDate,
+                endDate);
         return mapper.Map<List<RecordedValueResponseDto>>(recordedValues);
     }
 }
