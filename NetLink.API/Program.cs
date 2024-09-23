@@ -42,10 +42,7 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddDbContext<NetLinkDbContext>(options =>
-{
-    options.UseSqlServer("name=ConnectionStrings:DefaultConnection");
-});
+builder.Services.AddDbContext<NetLinkDbContext>(options => { options.UseSqlServer("name=ConnectionStrings:DefaultConnection"); });
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -138,6 +135,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors("AllowSpecificOrigin");
 }
 
 app.MapConnectionHandler<MqttConnectionHandler>(
@@ -158,6 +156,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<SensorHub>("/sensorHub");
-app.UseCors("AllowSpecificOrigin");
 
 app.Run();
