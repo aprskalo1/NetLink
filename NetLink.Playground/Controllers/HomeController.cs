@@ -20,18 +20,40 @@ public class HomeController(
 {
     public async Task<IActionResult> Index()
     {
-        var endUser = new EndUser("9d7f978f-ca3b-4c66-9dec-69e88352a64l");
-
+        var endUser = new EndUser("48a187e5-3a77-4842-949a-49a85ac0a0e1");
         await endUserSessionManager.LogInEndUserAsync(endUser);
-
-        var endUserSensors = await endUserManagementService.ListEndUserSensorsAsync(endUser.Id!);
-
-        await sensorSubscriptionService.StartListeningAsync(endUserSensors[0].Id.ToString());
-
+        
+        var sensors = await endUserManagementService.ListEndUserSensorsAsync(endUser.Id!);
+        
+        var sensor1 = sensors[0];
+        
+        await sensorSubscriptionService.StartListeningAsync(sensor1.Id);
+        
+        var recordedValues = await recordedValueService.GetRecordedValuesAsync(sensor1.Id, false, 10);
+        
         sensorSubscriptionService.OnRecordedValueReceived += (recordedValue) =>
         {
-            Console.WriteLine("Helooooooooooooo:" + recordedValue.Value);
+            
+
         };
+        
+        ViewBag.SensorId = sensor1.Id;
+        
+        return View(recordedValues);
+        
+        
+        // var endUser = new EndUser("9d7f978f-ca3b-4c66-9dec-69e88352a64l");
+        //
+        // await endUserSessionManager.LogInEndUserAsync(endUser);
+        //
+        // var endUserSensors = await endUserManagementService.ListEndUserSensorsAsync(endUser.Id!);
+        //
+        // await sensorSubscriptionService.StartListeningAsync(endUserSensors[0].Id.ToString());
+        //
+        // sensorSubscriptionService.OnRecordedValueReceived += (recordedValue) =>
+        // {
+        //     Console.WriteLine("Helooooooooooooo:" + recordedValue.Value);
+        // };
 
 
         //ID from your login example oatuh provider or custom login

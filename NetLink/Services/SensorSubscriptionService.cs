@@ -7,8 +7,8 @@ namespace NetLink.Services;
 public interface ISensorSubscriptionService
 {
     event Action<RecordedValue>? OnRecordedValueReceived;
-    Task StartListeningAsync(string sensorId);
-    Task StopListeningAsync(string sensorId);
+    Task StartListeningAsync(Guid sensorId);
+    Task StopListeningAsync(Guid sensorId);
 }
 
 internal class SensorSubscriptionService : ISensorSubscriptionService
@@ -27,7 +27,7 @@ internal class SensorSubscriptionService : ISensorSubscriptionService
 
     public event Action<RecordedValue>? OnRecordedValueReceived;
 
-    public async Task StartListeningAsync(string sensorId)
+    public async Task StartListeningAsync(Guid sensorId)
     {
         if (_hubConnection.State == HubConnectionState.Disconnected)
         {
@@ -37,7 +37,7 @@ internal class SensorSubscriptionService : ISensorSubscriptionService
         await _hubConnection.SendAsync("Subscribe", sensorId);
     }
 
-    public async Task StopListeningAsync(string sensorId)
+    public async Task StopListeningAsync(Guid sensorId)
     {
         await _hubConnection.StopAsync();
         await _hubConnection.SendAsync("Unsubscribe", sensorId);

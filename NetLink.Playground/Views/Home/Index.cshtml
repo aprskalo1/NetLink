@@ -1,8 +1,67 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<NetLink.Models.RecordedValue>
+
+@{
+ViewBag.Title = "Sensor Recorded Values";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h2>Sensor Recorded Values</h2>
+
+<table id="recordedValuesTable" class="table table-striped">
+    <thead>
+    <tr>
+        <th>Timestamp</th>
+        <th>Value</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var value in Model)
+    {
+    <tr>
+        <td>@value.RecordedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+        <td>@value.Value</td>
+    </tr>
+    }
+    </tbody>
+</table>
+
+<!-- SignalR Script for handling real-time updates -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.0/signalr.min.js"></script>
+<script type="text/javascript">
+    // Set up SignalR connection to the hub
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("https://localhost:7260/sensorHub") // Adjust this URL if needed based on your routing
+        .build();
+
+    // Start the connection and subscribe to the SensorHub
+    connection.start()
+        .then(() => {
+            console.log("Connected to SignalR hub.");
+            // Subscribe to the sensor using the sensor ID from ViewBag
+            connection.invoke("Subscribe", "@ViewBag.SensorId"); // Using sensorId passed from the backend
+        })
+        .catch((err) => console.error(err.toString()));
+
+    // Listen for incoming recorded value updates
+    connection.on("ReceiveRecordedValue", function (recordedValue) {
+        // When a new value is received, update the table
+        addNewValueToTable(recordedValue);
+    });
+
+    // Function to add a new row to the table dynamically
+    function addNewValueToTable(recordedValue) {
+        const tableBody = document.querySelector("#recordedValuesTable tbody");
+        const newRow = document.createElement("tr");
+
+        // Format the timestamp as necessary
+        const formattedTimestamp = new Date(recordedValue.recordedAt).toLocaleString();
+
+        // Add the new data to the row
+        newRow.innerHTML = `
+            <td>${formattedTimestamp}</td>
+            <td>${recordedValue.value}</td>
+        `;
+
+        // Prepend the new row to the table body (shows the newest value at the top)
+        tableBody.prepend(newRow);
+    }
+</script>
