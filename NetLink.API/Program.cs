@@ -42,10 +42,7 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddDbContext<NetLinkDbContext>(options =>
-{
-    options.UseSqlServer("name=ConnectionStrings:DefaultConnection");
-});
+builder.Services.AddDbContext<NetLinkDbContext>(options => { options.UseSqlServer("name=ConnectionStrings:DefaultConnection"); });
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -94,10 +91,19 @@ builder.Services.AddHostedMqttServer(optionsBuilder =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
+    options.AddPolicy("AllowDev",
         policyBuilder =>
         {
             policyBuilder.WithOrigins("http://localhost:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
+
+    options.AddPolicy("AllowPortal",
+        policyBuilder =>
+        {
+            policyBuilder.WithOrigins("https://portal.netlink-solution.com")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
@@ -138,7 +144,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors("AllowSpecificOrigin");
+    app.UseCors("AllowDev");
 }
 
 app.MapConnectionHandler<MqttConnectionHandler>(
@@ -154,9 +160,11 @@ app.UseMqttServer(server =>
     server.InterceptingPublishAsync += mqttService.OnMessageReceived;
 });
 
+app.UseCors("AllowPortal");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 app.MapHub<SensorHub>("/sensorHub");
 
