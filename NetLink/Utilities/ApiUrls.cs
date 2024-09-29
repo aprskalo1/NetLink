@@ -2,9 +2,11 @@
 
 internal static class ApiUrls
 {
-    public const string BaseUrl = "https://localhost:7260/api";
+    //public const string BaseUrl = "https://localhost:7260/api";
+    public const string BaseUrl = "https://netlink-solution.com/api";
 
-    public const string SignalRUrl = "https://localhost:7260/sensorHub";
+    // public const string SignalRUrl = "https://localhost:7260/sensorHub";
+    public const string SignalRUrl = "https://netlink-solution.com/sensorHub";
 
     public const string AuthUrl = "/Auth/AuthorizeClient?devToken={0}";
     public const string DevTokenValidationUrl = "/Auth/ValidateDeveloper?devToken={0}";
