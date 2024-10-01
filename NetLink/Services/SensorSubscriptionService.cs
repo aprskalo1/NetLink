@@ -39,7 +39,11 @@ internal class SensorSubscriptionService : ISensorSubscriptionService
 
     public async Task StopListeningAsync(Guid sensorId)
     {
+        if (_hubConnection.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.SendAsync("Unsubscribe", sensorId);
+        }
+
         await _hubConnection.StopAsync();
-        await _hubConnection.SendAsync("Unsubscribe", sensorId);
     }
 }

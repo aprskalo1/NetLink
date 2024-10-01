@@ -4,11 +4,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Title>NetLink</Title>
     <Authors>Ante Prskalo</Authors>
     <Description>NetLink is a powerful platform tailored specifically for managing IoT measuring devices. It allows you to easily configure, monitor, and control your measurement devices across various applications. Whether you are tracking environmental data, industrial metrics, or other sensor-based information, NetLink ensures seamless device management, data collection, and integration into your development workflow.</Description>
     <PackageIcon>nuget-icon.png</PackageIcon>
+    <PackageId>NetLinkCore</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
