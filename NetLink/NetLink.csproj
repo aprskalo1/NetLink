@@ -1,30 +1,46 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <Version>1.0.2</Version>
-    <Title>NetLink</Title>
-    <Authors>Ante Prskalo</Authors>
-    <Description>NetLink is a powerful platform tailored specifically for managing IoT measuring devices. It allows you to easily configure, monitor, and control your measurement devices across various applications. Whether you are tracking environmental data, industrial metrics, or other sensor-based information, NetLink ensures seamless device management, data collection, and integration into your development workflow.</Description>
-    <PackageIcon>nuget-icon.png</PackageIcon>
-    <PackageId>NetLinkCore</PackageId>
-    <PackageTags>IoT, MQTT, Sensors, SensorData, Telemetry, HomeAutomation, SensorNetwork</PackageTags>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Version>1.0.5</Version>
+        <Title>NetLink</Title>
+        <Authors>Ante Prskalo</Authors>
+        <Description>NetLink is a powerful platform tailored specifically for managing IoT measuring devices. It allows you to easily configure, monitor, and control your measurement devices across various applications. Whether you are tracking environmental data, industrial metrics, or other sensor-based information, NetLink ensures seamless device management, data collection, and integration into your development workflow.</Description>
+        <PackageIcon>nuget-icon.png</PackageIcon>
+        <PackageId>NetLinkCore</PackageId>
+        <PackageTags>IoT, MQTT, Sensors, SensorData, Telemetry, HomeAutomation, SensorNetwork</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.8" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.1.2" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.8"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.1.2"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Update="nuget-icon.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
+    <ItemGroup>
+        <None Include="LICENSE.txt">
+            <Pack>True</Pack>
+            <PackagePath>LICENSE.txt</PackagePath>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath>README.md</PackagePath>
+        </None>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <None Update="nuget-icon.png">
+            <Pack>True</Pack>
+            <PackagePath>nuget-icon.png</PackagePath>
+        </None>
+    </ItemGroup>
 
 </Project>
