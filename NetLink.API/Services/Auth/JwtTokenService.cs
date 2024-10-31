@@ -24,6 +24,7 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
 
         if (developer != null)
         {
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, developer.Id.ToString()));
             claims.Add(new Claim("developerId", developer.Id.ToString()));
             claims.Add(new Claim("username", developer.Username!));
             claims.Add(new Claim("devToken", developer.DevToken!));

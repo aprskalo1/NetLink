@@ -13,11 +13,12 @@ public interface IEndUserService
     Task<EndUserResponseDto> GetEndUserByIdAsync(string endUserId, string devToken);
     Task ValidateEndUserAsync(string endUserId);
     Task<List<EndUserResponseDto>> ListDevelopersEndUsersAsync(string devToken); //TODO: Put this in developer service
+    Task<PagedEndUserResponseDto> ListPagedDevelopersEndUsersAsync(Guid developerId, int page, int pageSize); //TODO: Put this in developer service
     Task DeactivateEndUserAsync(string endUserId);
     Task ReactivateEndUserAsync(string endUserId);
     Task SoftDeleteEndUserAsync(string endUserId);
     Task RestoreEndUserAsync(string endUserId);
-    Task AssignSensorsToEndUserAsync(List<Guid> sensorIds, string endUserId); 
+    Task AssignSensorsToEndUserAsync(List<Guid> sensorIds, string endUserId);
     Task<List<SensorResponseDto>> ListEndUserSensorsAsync(string endUserId); //TODO: Put this in sensor service
 
     //TODO: Add methods to assign and remove groups from end users
@@ -76,6 +77,25 @@ public class EndUserService(IMapper mapper, IDeveloperService developerService, 
         var endUsers = await endUserRepository.ListDeveloperEndUsersAsync(developerId);
         return mapper.Map<List<EndUserResponseDto>>(endUsers);
     }
+
+    public async Task<PagedEndUserResponseDto> ListPagedDevelopersEndUsersAsync(Guid developerId, int page, int pageSize)
+    {
+        var (endUsers, totalCount) = await endUserRepository.ListPagedDeveloperEndUsersAsync(developerId, page, pageSize);
+
+        if (endUsers == null || endUsers.Count == 0)
+        {
+            throw new NotFoundException("No end users found for the given developer.");
+        }
+
+        var endUserDtos = mapper.Map<List<EndUserResponseDto>>(endUsers);
+
+        return new PagedEndUserResponseDto
+        {
+            EndUsers = endUserDtos,
+            TotalCount = totalCount
+        };
+    }
+
 
     public async Task DeactivateEndUserAsync(string endUserId)
     {

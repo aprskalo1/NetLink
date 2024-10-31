@@ -10,6 +10,7 @@ public interface IEndUserRepository
     Task AddEndUserAsync(EndUser endUser);
     Task<EndUser> GetEndUserByIdAsync(string endUserId);
     Task<List<EndUser>> ListDeveloperEndUsersAsync(Guid developerId);
+    Task<(List<EndUser> EndUsers, int TotalCount)> ListPagedDeveloperEndUsersAsync(Guid developerId, int page, int pageSize);
     Task AddDeveloperUserAsync(DeveloperUser developerUser);
     Task<List<Sensor>> GetSensorsByIdsAsync(List<Guid> sensorIds);
     Task<bool> IsEndUserSensorAssignedAsync(Guid sensorId, string endUserId);
@@ -38,6 +39,22 @@ public class EndUserRepository(NetLinkDbContext dbContext) : IEndUserRepository
             .Where(du => du.DeveloperId == developerId)
             .Select(du => du.EndUser)
             .ToListAsync();
+    }
+
+    public async Task<(List<EndUser> EndUsers, int TotalCount)> ListPagedDeveloperEndUsersAsync(Guid developerId, int page, int pageSize)
+    {
+        var query = dbContext.DeveloperUsers
+            .Where(du => du.DeveloperId == developerId)
+            .Select(du => du.EndUser);
+
+        var totalCount = await query.CountAsync();
+
+        var endUsers = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (endUsers, totalCount);
     }
 
     public async Task AddDeveloperUserAsync(DeveloperUser developerUser)

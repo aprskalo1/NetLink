@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NetLink.API.DTOs.Request;
 using NetLink.API.DTOs.Response;
 using NetLink.API.Services;
+using NetLink.API.Utils;
 
 namespace NetLink.API.Controllers;
 
@@ -36,6 +37,14 @@ public class EndUsersController(IEndUserService endUserService) : ControllerBase
     public async Task<ActionResult<List<EndUserResponseDto>>> ListDeveloperEndUsersAsync(string devToken)
     {
         return Ok(await endUserService.ListDevelopersEndUsersAsync(devToken));
+    }
+
+    [HttpGet("ListPagedDevelopersEndUsers")]
+    public async Task<ActionResult<PagedEndUserResponseDto>> ListPagedDeveloperEndUsersAsync(int page, int pageSize)
+    {
+        var developerId = JwtClaimsHelper.GetDeveloperId(User);
+        var pagedResult = await endUserService.ListPagedDevelopersEndUsersAsync(developerId, page, pageSize);
+        return Ok(pagedResult);
     }
 
     [HttpPatch("DeactivateEndUser")]
