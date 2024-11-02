@@ -100,7 +100,6 @@ public class EndUserService(IMapper mapper, IDeveloperService developerService, 
         };
     }
 
-
     public async Task DeactivateEndUserAsync(string endUserId)
     {
         var endUser = await endUserRepository.GetEndUserByIdAsync(endUserId);
