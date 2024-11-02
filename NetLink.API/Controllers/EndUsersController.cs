@@ -40,10 +40,12 @@ public class EndUsersController(IEndUserService endUserService) : ControllerBase
     }
 
     [HttpGet("ListPagedDevelopersEndUsers")]
-    public async Task<ActionResult<PagedEndUserResponseDto>> ListPagedDeveloperEndUsersAsync(int page, int pageSize)
+    public async Task<ActionResult<PagedEndUserResponseDto>> ListPagedDeveloperEndUsersAsync(int page, int pageSize,
+        string? searchTerm = null)
     {
         var developerId = JwtClaimsHelper.GetDeveloperId(User);
-        var pagedResult = await endUserService.ListPagedDevelopersEndUsersAsync(developerId, page, pageSize);
+        var pagedResult =
+            await endUserService.ListPagedDevelopersEndUsersAsync(developerId, page, pageSize, searchTerm);
         return Ok(pagedResult);
     }
 

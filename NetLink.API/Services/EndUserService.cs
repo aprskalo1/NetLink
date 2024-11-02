@@ -13,7 +13,11 @@ public interface IEndUserService
     Task<EndUserResponseDto> GetEndUserByIdAsync(string endUserId, string devToken);
     Task ValidateEndUserAsync(string endUserId);
     Task<List<EndUserResponseDto>> ListDevelopersEndUsersAsync(string devToken); //TODO: Put this in developer service
-    Task<PagedEndUserResponseDto> ListPagedDevelopersEndUsersAsync(Guid developerId, int page, int pageSize); //TODO: Put this in developer service
+
+    Task<PagedEndUserResponseDto>
+        ListPagedDevelopersEndUsersAsync(Guid developerId, int page,
+            int pageSize, string? searchTerm = null);
+
     Task DeactivateEndUserAsync(string endUserId);
     Task ReactivateEndUserAsync(string endUserId);
     Task SoftDeleteEndUserAsync(string endUserId);
@@ -33,7 +37,8 @@ public class EndUserService(IMapper mapper, IDeveloperService developerService, 
         var endUser = mapper.Map<EndUser>(endUserRequestDto);
 
         if (await endUserRepository.ValidateEndUserAssociationAsync(endUserRequestDto.Id!, developerId))
-            throw new EndUserException($"EndUser with ID: {endUserRequestDto.Id} already exists, please use another account.");
+            throw new EndUserException(
+                $"EndUser with ID: {endUserRequestDto.Id} already exists, please use another account.");
 
         await endUserRepository.AddEndUserAsync(endUser);
 
@@ -53,7 +58,8 @@ public class EndUserService(IMapper mapper, IDeveloperService developerService, 
     {
         var developerId = await developerService.GetDeveloperIdFromTokenAsync(devToken);
         if (!await endUserRepository.ValidateEndUserAssociationAsync(endUserId, developerId))
-            throw new EndUserException($"EndUser with ID {endUserId} does not exist or is not associated with the developer.");
+            throw new EndUserException(
+                $"EndUser with ID {endUserId} does not exist or is not associated with the developer.");
 
         var endUser = await endUserRepository.GetEndUserByIdAsync(endUserId);
         return mapper.Map<EndUserResponseDto>(endUser);
@@ -64,7 +70,8 @@ public class EndUserService(IMapper mapper, IDeveloperService developerService, 
         var endUser = await endUserRepository.GetEndUserByIdAsync(endUserId);
 
         if (endUser.DeletedAt.HasValue)
-            throw new EndUserException($"EndUser's account with ID {endUserId} has been deleted at {endUser.DeletedAt}.");
+            throw new EndUserException(
+                $"EndUser's account with ID {endUserId} has been deleted at {endUser.DeletedAt}.");
 
         if (!endUser.Active)
             throw new EndUserException($"EndUser's account with ID {endUserId} is not active.");
@@ -78,14 +85,11 @@ public class EndUserService(IMapper mapper, IDeveloperService developerService, 
         return mapper.Map<List<EndUserResponseDto>>(endUsers);
     }
 
-    public async Task<PagedEndUserResponseDto> ListPagedDevelopersEndUsersAsync(Guid developerId, int page, int pageSize)
+    public async Task<PagedEndUserResponseDto> ListPagedDevelopersEndUsersAsync(Guid developerId, int page,
+        int pageSize, string? searchTerm = null)
     {
-        var (endUsers, totalCount) = await endUserRepository.ListPagedDeveloperEndUsersAsync(developerId, page, pageSize);
-
-        if (endUsers == null || endUsers.Count == 0)
-        {
-            throw new NotFoundException("No end users found for the given developer.");
-        }
+        var (endUsers, totalCount) =
+            await endUserRepository.ListPagedDeveloperEndUsersAsync(developerId, page, pageSize, searchTerm);
 
         var endUserDtos = mapper.Map<List<EndUserResponseDto>>(endUsers);
 

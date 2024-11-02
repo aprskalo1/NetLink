@@ -10,7 +10,10 @@ public interface IEndUserRepository
     Task AddEndUserAsync(EndUser endUser);
     Task<EndUser> GetEndUserByIdAsync(string endUserId);
     Task<List<EndUser>> ListDeveloperEndUsersAsync(Guid developerId);
-    Task<(List<EndUser> EndUsers, int TotalCount)> ListPagedDeveloperEndUsersAsync(Guid developerId, int page, int pageSize);
+
+    Task<(List<EndUser> EndUsers, int TotalCount)> ListPagedDeveloperEndUsersAsync(Guid developerId, int page,
+        int pageSize, string? searchTerm = null);
+
     Task AddDeveloperUserAsync(DeveloperUser developerUser);
     Task<List<Sensor>> GetSensorsByIdsAsync(List<Guid> sensorIds);
     Task<bool> IsEndUserSensorAssignedAsync(Guid sensorId, string endUserId);
@@ -41,11 +44,25 @@ public class EndUserRepository(NetLinkDbContext dbContext) : IEndUserRepository
             .ToListAsync();
     }
 
-    public async Task<(List<EndUser> EndUsers, int TotalCount)> ListPagedDeveloperEndUsersAsync(Guid developerId, int page, int pageSize)
+    public async Task<(List<EndUser> EndUsers, int TotalCount)> ListPagedDeveloperEndUsersAsync(
+        Guid developerId,
+        int page,
+        int pageSize,
+        string? searchTerm = null)
     {
         var query = dbContext.DeveloperUsers
             .Where(du => du.DeveloperId == developerId)
             .Select(du => du.EndUser);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(eu =>
+                (eu.Id != null && eu.Id.ToString().Contains(searchTerm)) ||
+                (eu.Username != null && eu.Username.Contains(searchTerm)) ||
+                (eu.Email != null && eu.Email.Contains(searchTerm)) ||
+                (eu.FirstName != null && eu.FirstName.Contains(searchTerm)) ||
+                (eu.LastName != null && eu.LastName.Contains(searchTerm)));
+        }
 
         var totalCount = await query.CountAsync();
 
