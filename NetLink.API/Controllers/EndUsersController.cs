@@ -89,4 +89,12 @@ public class EndUsersController(IEndUserService endUserService) : ControllerBase
     {
         return Ok(await endUserService.ListEndUserSensorsAsync(endUserId));
     }
+
+    [HttpGet("ListPagedEndUserSensors")]
+    public async Task<ActionResult<PagedSensorDto>> ListPagedEndUserSensorsAsync(string endUserId, int page,
+        int pageSize, string? searchTerm = null)
+    {
+        var pagedResult = await endUserService.ListPagedEndUserSensorsAsync(endUserId, page, pageSize, searchTerm);
+        return Ok(pagedResult);
+    }
 }

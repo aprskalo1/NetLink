@@ -21,6 +21,9 @@ public interface IEndUserRepository
     Task SaveChangesAsync();
     Task<bool> ValidateEndUserAssociationAsync(string endUserId, Guid developerId);
     Task<List<Sensor>> ListEndUserSensorsAsync(string endUserId);
+
+    Task<(List<Sensor> Sensors, int TotalCount)> ListPageEndUserSensorsAsync(string endUserId, int page, int pageSize,
+        string? searchTerm = null);
 }
 
 public class EndUserRepository(NetLinkDbContext dbContext) : IEndUserRepository
@@ -111,5 +114,36 @@ public class EndUserRepository(NetLinkDbContext dbContext) : IEndUserRepository
             .Where(eus => eus.EndUserId == endUserId)
             .Select(eus => eus.Sensor)
             .ToListAsync();
+    }
+
+    public async Task<(List<Sensor> Sensors, int TotalCount)> ListPageEndUserSensorsAsync(
+        string endUserId,
+        int page,
+        int pageSize,
+        string? searchTerm = null)
+    {
+        var query = dbContext.Sensors
+            .Where(s => dbContext.EndUserSensors
+                .Any(eus => eus.SensorId == s.Id && eus.EndUserId == endUserId));
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(s =>
+                s.Id.ToString().Contains(searchTerm) ||
+                (s.DeviceName != null && s.DeviceName.Contains(searchTerm)) ||
+                (s.DeviceType != null && s.DeviceType.Contains(searchTerm)) ||
+                (s.MeasurementUnit != null && s.MeasurementUnit.Contains(searchTerm)) ||
+                (s.DeviceLocation != null && s.DeviceLocation.Contains(searchTerm)) ||
+                (s.DeviceDescription != null && s.DeviceDescription.Contains(searchTerm)));
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var sensors = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (sensors, totalCount);
     }
 }

@@ -25,7 +25,8 @@ public interface IEndUserService
     Task AssignSensorsToEndUserAsync(List<Guid> sensorIds, string endUserId);
     Task<List<SensorResponseDto>> ListEndUserSensorsAsync(string endUserId); //TODO: Put this in sensor service
 
-    //TODO: Add methods to assign and remove groups from end users
+    Task<PagedSensorDto> ListPagedEndUserSensorsAsync(string endUserId, int page, int pageSize,
+        string? searchTerm = null);
 }
 
 public class EndUserService(IMapper mapper, IDeveloperService developerService, IEndUserRepository endUserRepository)
@@ -171,5 +172,20 @@ public class EndUserService(IMapper mapper, IDeveloperService developerService, 
 
         var endUserSensors = await endUserRepository.ListEndUserSensorsAsync(endUserId);
         return mapper.Map<List<SensorResponseDto>>(endUserSensors);
+    }
+
+    public async Task<PagedSensorDto> ListPagedEndUserSensorsAsync(string endUserId, int page, int pageSize,
+        string? searchTerm = null)
+    {
+        var (sensors, totalCount) =
+            await endUserRepository.ListPageEndUserSensorsAsync(endUserId, page, pageSize, searchTerm);
+
+        var sensorDtos = mapper.Map<List<SensorResponseDto>>(sensors);
+
+        return new PagedSensorDto
+        {
+            Sensors = sensorDtos,
+            TotalCount = totalCount
+        };
     }
 }
