@@ -19,6 +19,7 @@ public interface ISensorOperationsService
     Task RecordValueByNameAsync(RecordedValueRequestDto recordedValueRequestDto, string sensorName, string endUserId);
     Task RecordValueByIdAsync(RecordedValueRequestDto recordedValueRequestDto, Guid sensorId);
     Task RecordValueRemotelyAsync(RecordedValueRequestDto recordedValueRequestDto, Guid sensorId);
+    Task<List<SensorResponseDto>> GetSensorsFromGroupAsync(Guid groupId, string endUserId);
 
     Task<List<RecordedValueResponseDto>> GetRecordedValuesAsync(Guid sensorId, string endUserId, int? quantity = null,
         bool isAscending = false,
@@ -28,6 +29,7 @@ public interface ISensorOperationsService
 public class SensorOperationsService(
     IMapper mapper,
     ISensorRepository sensorRepository,
+    IGroupRepository groupRepository,
     IEndUserService endUserService,
     IHubContext<SensorHub> hubContext)
     : ISensorOperationsService
@@ -124,6 +126,19 @@ public class SensorOperationsService(
 
         await hubContext.Clients.Group(sensorId.ToString())
             .SendAsync("ReceiveRecordedValue", recordedValue);
+    }
+
+    public async Task<List<SensorResponseDto>> GetSensorsFromGroupAsync(Guid groupId, string endUserId)
+    {
+        var group = await groupRepository.GetGroupByIdAsync(groupId);
+        if (group is null)
+            throw new NotFoundException($"Group with ID: {groupId} has not been found.");
+
+        await endUserService.ValidateEndUserAsync(endUserId);
+
+        var sensorsFromGroup = await sensorRepository.GetSensorFromGroupAsync(groupId);
+
+        return mapper.Map<List<SensorResponseDto>>(sensorsFromGroup);
     }
 
     public async Task<List<RecordedValueResponseDto>> GetRecordedValuesAsync(

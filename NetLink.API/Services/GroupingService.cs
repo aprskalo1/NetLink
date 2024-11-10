@@ -12,13 +12,15 @@ public interface IGroupingService
     Task<Guid> CreateGroupAsync(GroupRequestDto groupDto, string endUserId);
     Task DeleteGroupAsync(Guid groupId, string endUserId);
     Task AddSensorToGroupAsync(Guid groupId, Guid sensorId, string endUserId);
+    Task AddSensorsToGroupAsync(Guid groupId, List<Guid> sensorIds, string endUserId);
     Task RemoveSensorFromGroupAsync(Guid groupId, Guid sensorId, string endUserId);
     Task<List<GroupResponseDto>> GetEndUserGroupsAsync(string endUserId);
     Task<GroupResponseDto> GetGroupByIdAsync(Guid groupId, string endUserId);
     Task<GroupResponseDto> UpdateGroupAsync(GroupRequestDto groupDto, Guid groupId, string endUserId);
 }
 
-public class GroupingService(IEndUserService endUserService, IMapper mapper, IGroupRepository groupRepository) : IGroupingService
+public class GroupingService(IEndUserService endUserService, IMapper mapper, IGroupRepository groupRepository)
+    : IGroupingService
 {
     public async Task<Guid> CreateGroupAsync(GroupRequestDto groupDto, string endUserId)
     {
@@ -74,6 +76,36 @@ public class GroupingService(IEndUserService endUserService, IMapper mapper, IGr
 
         await groupRepository.AddSensorGroupAsync(sensorGroup);
         await groupRepository.SaveChangesAsync();
+    }
+
+    public async Task AddSensorsToGroupAsync(Guid groupId, List<Guid> sensorIds, string endUserId)
+    {
+        await endUserService.ValidateEndUserAsync(endUserId);
+
+        var group = await groupRepository.GetGroupByIdAsync(groupId);
+        if (group == null)
+            throw new NotFoundException($"Group with ID: {groupId} has not been found.");
+
+        var existingSensorGroups = await groupRepository.GetSensorGroupsAsync(groupId, sensorIds);
+        var existingSensorIds = existingSensorGroups.Select(sg => sg.SensorId).ToHashSet();
+
+        if (existingSensorIds.Count > 0)
+            throw new SensorGroupException("One or more sensors already exist in the group.");
+
+        var sensorGroupsToAdd = sensorIds
+            .Where(sensorId => !existingSensorIds.Contains(sensorId))
+            .Select(sensorId => new SensorGroup
+            {
+                SensorId = sensorId,
+                GroupId = groupId
+            })
+            .ToList();
+
+        if (sensorGroupsToAdd.Count > 0)
+        {
+            await groupRepository.AddSensorGroupsAsync(sensorGroupsToAdd);
+            await groupRepository.SaveChangesAsync();
+        }
     }
 
     public async Task RemoveSensorFromGroupAsync(Guid groupId, Guid sensorId, string endUserId)

@@ -30,8 +30,15 @@ public class SensorsController(ISensorOperationsService sensorService) : Control
         return Ok(await sensorService.GetSensorByIdAsync(sensorId, endUserId));
     }
 
+    [HttpGet("GetSensorsFromGroup")]
+    public async Task<ActionResult> GetSensorsFromGroupAsync(Guid groupId, string endUserId)
+    {
+        return Ok(await sensorService.GetSensorsFromGroupAsync(groupId, endUserId));
+    }
+
     [HttpPut("UpdateSensor")]
-    public async Task<ActionResult> UpdateSensorAsync(Guid sensorId, SensorRequestDto sensorRequestDto, string endUserId)
+    public async Task<ActionResult> UpdateSensorAsync(Guid sensorId, SensorRequestDto sensorRequestDto,
+        string endUserId)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);

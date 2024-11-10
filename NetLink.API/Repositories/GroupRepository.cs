@@ -11,10 +11,12 @@ public interface IGroupRepository
     Task DeleteGroupAsync(Group group);
     Task AddEndUserGroupAsync(EndUserGroup endUserGroup);
     Task AddSensorGroupAsync(SensorGroup sensorGroup);
+    Task AddSensorGroupsAsync(List<SensorGroup> sensorGroups);
     Task RemoveSensorGroupAsync(SensorGroup sensorGroup);
     Task SaveChangesAsync();
     Task<Group> GetGroupByIdAsync(Guid groupId);
     Task<SensorGroup> GetSensorGroupAsync(Guid groupId, Guid sensorId);
+    Task<List<SensorGroup>> GetSensorGroupsAsync(Guid groupId, List<Guid> sensorIds);
     Task ValidateUserGroupAsync(string endUserId, Guid groupId);
     Task<List<Group>> FindEndUserGroupsAsync(string endUserId);
     Task UpdateGroupAsync(Group group);
@@ -43,6 +45,11 @@ public class GroupRepository(NetLinkDbContext dbContext) : IGroupRepository
         await dbContext.SensorGroups.AddAsync(sensorGroup);
     }
 
+    public async Task AddSensorGroupsAsync(List<SensorGroup> sensorGroups)
+    {
+        await dbContext.SensorGroups.AddRangeAsync(sensorGroups);
+    }
+
     public async Task RemoveSensorGroupAsync(SensorGroup sensorGroup)
     {
         dbContext.SensorGroups.Remove(sensorGroup);
@@ -64,9 +71,17 @@ public class GroupRepository(NetLinkDbContext dbContext) : IGroupRepository
         return (await dbContext.SensorGroups.FirstOrDefaultAsync(x => x.GroupId == groupId && x.SensorId == sensorId))!;
     }
 
+    public async Task<List<SensorGroup>> GetSensorGroupsAsync(Guid groupId, List<Guid> sensorIds)
+    {
+        return await dbContext.SensorGroups
+            .Where(sg => sg.GroupId == groupId && sensorIds.Contains(sg.SensorId))
+            .ToListAsync();
+    }
+
     public async Task ValidateUserGroupAsync(string endUserId, Guid groupId)
     {
-        var endUserGroup = await dbContext.EndUserGroups.FirstOrDefaultAsync(x => x.EndUserId == endUserId && x.GroupId == groupId);
+        var endUserGroup =
+            await dbContext.EndUserGroups.FirstOrDefaultAsync(x => x.EndUserId == endUserId && x.GroupId == groupId);
 
         if (endUserGroup == null)
             throw new SensorGroupException($"Group with ID: {groupId} has not found.");

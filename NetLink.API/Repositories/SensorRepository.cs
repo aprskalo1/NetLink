@@ -16,8 +16,10 @@ public interface ISensorRepository
     Task<Guid> GetSensorIdByNameAsync(string sensorName, string endUserId);
     Task DeleteSensorAsync(Sensor sensor);
     Task AddRecordedValueAsync(RecordedValue recordedValue);
+    Task<List<Sensor>> GetSensorFromGroupAsync(Guid groupId);
 
-    Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, string endUserId, bool isAscending, int? quantity = null, DateTime? startDate = null,
+    Task<List<RecordedValue>> GetRecordedValuesAsync(Guid sensorId, string endUserId, bool isAscending,
+        int? quantity = null, DateTime? startDate = null,
         DateTime? endDate = null);
 
     Task SaveChangesAsync();
@@ -87,6 +89,16 @@ public class SensorRepository(NetLinkDbContext dbContext) : ISensorRepository
     public async Task AddRecordedValueAsync(RecordedValue recordedValue)
     {
         await dbContext.RecordedValues.AddAsync(recordedValue);
+    }
+
+    public async Task<List<Sensor>> GetSensorFromGroupAsync(Guid groupId)
+    {
+        var sensors = await dbContext.SensorGroups
+            .Where(sg => sg.GroupId == groupId)
+            .Select(sg => sg.Sensor)
+            .ToListAsync();
+
+        return sensors;
     }
 
     public async Task<List<RecordedValue>> GetRecordedValuesAsync(

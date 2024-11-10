@@ -25,6 +25,13 @@ public class GroupingController(IGroupingService groupingService) : ControllerBa
         return Ok();
     }
 
+    [HttpPost("AddSensorsToGroup")]
+    public async Task<ActionResult> AddSensorsToGroupAsync(Guid groupId, List<Guid> sensorIds, string endUserId)
+    {
+        await groupingService.AddSensorsToGroupAsync(groupId, sensorIds, endUserId);
+        return Ok();
+    }
+
     [HttpPost("RemoveSensorFromGroup")]
     public async Task<ActionResult> RemoveSensorFromGroupAsync(Guid groupId, Guid sensorId, string endUserId)
     {
